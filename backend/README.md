@@ -24,3 +24,6 @@ database connection. Migrations are separate per provider under `Persistence/Mig
 
 See [account setup and API contract](../docs/authentication.md) for administrator
 bootstrap, sessions, account management, and the authentication smoke test.
+
+See [catalog API](../docs/catalog.md) and [CSV import](../docs/csv-import.md) for
+menu administration and the preview/commit import workflow.

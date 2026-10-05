@@ -33,3 +33,14 @@ Next: table and catalog CRUD with sorting, enabled state, and price validation (
 - Existing NuGet warnings NU1900 (vulnerability feed unavailable) and NU1510 (explicit Identity dependency) remain. No schema change was required. SQL Server execution remains unverified without an isolated instance.
 
 Next: backend step 4, CSV preview and transactional import using `ciselnik.csv`. React administration, the operational frontend, TeamCity, and SQL Server verification remain pending; this step completes the catalog administration API, not the full stage-2 acceptance gate.
+
+## 2026-10-05 — Step 4: CSV preview and transactional import
+
+- Added administrator-only CSV template download, preview, and commit endpoints. Preview accepts decoded CSV text, returns validated rows and Czech row-level errors, and makes no catalog changes. A protected, account-bound token confirms those rows within 30 minutes.
+- Added quoted-field parsing, whitespace trimming, preserved alphanumeric/leading-zero codes, empty-row handling, duplicate rejection, shared price validation, and VAT-inclusive decimal rounding.
+- Added transactional upserts with stable item IDs, name/price/VAT/category updates, category creation, and subcategory clearing only when the category changes. Existing enabled states, category display names, and sorting remain intact; order snapshots are untouched.
+- Found that the sample's 11 categories use 13 case-sensitive spellings (`k`/`K` and `z`/`Z`). Import matches codes ignoring case, retains existing spelling, and rejects ambiguous existing variants. Documented this and the retry/update behavior in `docs/csv-import.md`.
+- Verified `dotnet run --no-restore --project backend/RestaurantOrders.SmokeTests`: authentication, catalog, and CSV checks passed against fresh SQLite. Import checks cover all 201 sample items and nine empty records, 11 category creation, quoting, row errors, rounding, authorization, template download, preview isolation, tampered tokens, repeated import, subcategory retention/clearing, and full rollback after a late conflict. `git diff --check` passed.
+- No migration was needed. Existing NU1900 vulnerability-feed and NU1510 dependency warnings remain. SQL Server execution is still pending an isolated instance; frontend import UI is not yet implemented.
+
+Next: backend step 5, atomic table/order creation and additions, unit removal, per-unit and bulk Processed/Paid actions. React, TeamCity, and SQL Server verification remain pending delivery work.

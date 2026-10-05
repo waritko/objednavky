@@ -14,6 +14,8 @@ public sealed record AssignmentInput(Guid[]? ItemIds, Guid? SubcategoryId);
 
 public sealed class CatalogService(RestaurantDbContext db)
 {
+    public static bool ValidPrice(decimal price, decimal vat) => price >= 0 && price <= 4999999999999999.99m &&
+        decimal.Round(price, 2) == price && vat >= 0 && vat <= 100 && decimal.Round(vat, 2) == vat;
     public static decimal OrderingPrice(decimal priceBeforeVat, decimal vatRate) =>
         decimal.Round(priceBeforeVat * (1 + vatRate / 100), 2, MidpointRounding.AwayFromZero);
 
@@ -90,9 +92,7 @@ public sealed class CatalogService(RestaurantDbContext db)
     {
         if (!Text(input.Name, 200) || !Text(input.Code, 50)) return Invalid();
         // Bound arithmetic and enforce the same decimal scale on SQLite and SQL Server.
-        if (input.PriceBeforeVat < 0 || input.PriceBeforeVat > 4999999999999999.99m ||
-            decimal.Round(input.PriceBeforeVat, 2) != input.PriceBeforeVat ||
-            input.VatRate < 0 || input.VatRate > 100 || decimal.Round(input.VatRate, 2) != input.VatRate)
+        if (!ValidPrice(input.PriceBeforeVat, input.VatRate))
             return Error("invalid_price", "Cena musí být nezáporná, DPH v rozsahu 0–100 a obě hodnoty nejvýše se dvěma desetinnými místy.");
         var entity = id is null ? new MenuItem { Name = "", Code = "" } : await db.MenuItems.FindAsync([id.Value], ct);
         if (entity is null) return Results.NotFound();

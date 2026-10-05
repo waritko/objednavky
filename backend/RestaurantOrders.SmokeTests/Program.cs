@@ -92,6 +92,7 @@ try
     await Check(await staff.GetAsync("/accounts"), 403, "operational administration denied");
     await Check(await staff.PostAsJsonAsync("/accounts", new { username = "intruder", password = "Waiter-password-123", role = "Administrator" }), 403, "operational account creation denied");
     await CatalogChecks.Run(admin, staff, anonymous);
+    await ImportChecks.Run(admin, staff, anonymous, Path.Combine(root, "../ciselnik.csv"));
     await Check(await admin.PutAsJsonAsync($"/accounts/{id}", new { username = "waiter", password = "Changed-password-123", role = "Operational", enabled = true }), 200, "password reset");
     await Check(await staff.GetAsync("/auth/me"), 401, "password reset revokes session");
     await Token(staff);
@@ -100,7 +101,7 @@ try
     await Check(await staff.GetAsync("/auth/me"), 401, "disabled account session denied");
     await Check(await admin.PostAsync("/auth/logout", null), 204, "logout");
     await Check(await admin.GetAsync("/auth/me"), 401, "logout clears session");
-    Console.WriteLine("Authentication and catalog smoke tests passed (SQLite).");
+    Console.WriteLine("Authentication, catalog and CSV import smoke tests passed (SQLite).");
 }
 finally
 {

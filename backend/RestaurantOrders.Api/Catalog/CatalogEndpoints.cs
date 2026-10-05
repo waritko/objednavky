@@ -22,6 +22,11 @@ public static class CatalogEndpoints
             await db.MenuItems.AsNoTracking().OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ThenBy(x => x.Id).ToListAsync(ct));
 
         var administration = catalog.MapGroup("").RequireAuthorization(p => p.RequireRole("Administrator"));
+        administration.MapGet("/import/template", () => Results.File(System.Text.Encoding.UTF8.GetBytes(CsvImportService.Header + "\r\n001,Káva,A,41.32,21\r\n"), "text/csv; charset=utf-8", "ciselnik-template.csv"));
+        administration.MapPost("/import/preview", (CsvPreviewInput input, CsvImportService service, System.Security.Claims.ClaimsPrincipal user) =>
+            service.Preview(input, user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value));
+        administration.MapPost("/import/commit", (CsvCommitInput input, CsvImportService service, System.Security.Claims.ClaimsPrincipal user, CancellationToken ct) =>
+            service.Commit(input, user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value, ct));
         administration.MapPost("/categories", (CategoryInput input, CatalogService service, CancellationToken ct) => service.SaveCategory(null, input, ct));
         administration.MapPut("/categories/{id:guid}", (Guid id, CategoryInput input, CatalogService service, CancellationToken ct) => service.SaveCategory(id, input, ct));
         administration.MapPost("/subcategories", (SubcategoryInput input, CatalogService service, CancellationToken ct) => service.SaveSubcategory(null, input, ct));

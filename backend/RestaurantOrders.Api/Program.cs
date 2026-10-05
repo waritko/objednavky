@@ -31,6 +31,7 @@ switch (provider.ToLowerInvariant())
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CatalogService>();
+builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = 429;
