@@ -15,20 +15,20 @@ Build a Czech-language web application for restaurant staff. It must work well o
 - Administrators have separate login and access to table and menu management. Multiple operational accounts are supported; each can use both waiter and kitchen features. A shared phone remains signed in to one operational account during use, with no in-app account-switching flow.
 - Historical orders remain stored indefinitely.
 
-## 2. Decisions to confirm before implementing the affected workflow
+## 2. Agreed workflow decisions
 
-The specification does not settle these details. Use the proposed behavior below unless product review changes it.
+These decisions define the order, account, payment, and import workflows.
 
-| Topic | Proposed behavior | Why it matters |
-| --- | --- | --- |
-| Closing an order | Close it when every unit is both Processed and Paid. A closed order is read-only and the table can start a new order. | Defines table reuse and what appears in the active-order list. |
-| Removing or changing units | Allow removal of an unpaid unit; require a separate correction or refund process for a paid unit. Keep an audit record of removals. | Prevents paid history from being silently rewritten. |
-| Preparation progress | Use only the specified Processed state for delivery. The kitchen sees undelivered units; there is no separate “ready” state in the first release. | Avoids inventing a preparation workflow. |
-| Payment handling | Record that units were paid, with time and acting account; do not integrate a payment terminal or accounting system in the first release. | The specification describes payment status, not payment collection. |
-| Authentication | Use administrator and operational roles, with named accounts and password-based login. Accounts stay signed in until logout or session expiry. | Establishes access control and shared-device behavior. |
-| CSV import | Provide a documented UTF-8 CSV template with category, subcategory, name, and price; preview and validate before applying. | The input format is not specified. |
+| Topic | Status | Behavior | Why it matters |
+| --- | --- | --- | --- |
+| Closing an order | Agreed | Automatically close it when every unit is both Processed and Paid. A closed order is read-only and the table can start a new order. | Defines table reuse and what appears in the active-order list. |
+| Removing or changing units | Agreed | Allow removal of unpaid and paid units. Retain removed units visibly in the order with a Removed status. Removal lowers the current order value; removed units are excluded from current totals and completion checks. For a paid unit, retain its original Paid record and record the removing account and date/time. Removal does not create a refund action. | Preserves the history of paid-item corrections while correcting the current order value. |
+| Preparation progress | Agreed | Use only the specified Processed state for delivery. The kitchen sees undelivered units; there is no separate Ready state. | Keeps the kitchen workflow aligned with the specified delivery status. |
+| Payment handling | Agreed | Mark selected units Paid and record the acting account and time. Payment processing happens elsewhere; this application does not collect payment or integrate a terminal. | Defines the boundary of the payment workflow. |
+| Authentication | Agreed | Use administrator and operational roles, with named accounts and username-and-password login. Each operational account can use both waiter and kitchen screens. A shared phone stays signed in during use, with no account-switch control; logout and session expiry remain available. | Establishes access control and shared-device behavior. |
+| CSV import | Agreed | Use a documented UTF-8 CSV template with stable item code, category, subcategory, name, and price; preview and validate before applying. Match by item code. Re-importing an existing item updates its price and category/subcategory placement. | A stable match prevents duplicate items when their category changes. |
 
-These are implementation choices, not additional confirmed requirements. If closing must be manual or paid items must be refundable in the first release, adjust the order lifecycle and tests before building the payment screen.
+All section 2 workflow decisions are agreed. Keep the detailed import validation and error rules documented with the CSV template during implementation.
 
 ## 3. Architecture and repository structure
 
@@ -51,9 +51,9 @@ Use one API contract shared by the mobile screens and administration. Document r
 | Table | Identifier, display name/number, sort order, enabled flag. Disabling preserves historical references. |
 | Category | Identifier, name, sort order, enabled flag. |
 | Subcategory | Identifier, parent category, name, sort order, enabled flag. |
-| Menu item | Identifier, subcategory, name, current price, sort order, enabled flag. |
+| Menu item | Identifier, stable unique item code, subcategory, name, current price, sort order, enabled flag. |
 | Order | Identifier, table, opened/closed times, lifecycle state, creator, concurrency token. |
-| Order unit | Identifier, order, source menu item, snapshot of item/category names and unit price, added time/account, Processed time/account, Paid time/account, optional removal time/account. |
+| Order unit | Identifier, order, source menu item, snapshot of item/category names and unit price, added time/account, Processed time/account, Paid time/account, optional removal time/account. Removed units remain in order history. |
 | Audit event | Order, actor, timestamp, action, affected unit(s), and relevant before/after values for corrections. |
 
 Store **one order unit per tap**. The UI may group identical units and display a quantity, but each unit retains independent Processed and Paid states. This supports selected-quantity actions without rounding or ambiguity. Prices and names are copied into the order when a unit is added so later catalog edits do not change historical receipts or totals. Use decimal money values, a consistent currency setting, and explicit rounding rules.
@@ -64,7 +64,8 @@ Store **one order unit per tap**. The UI may group identical units and display a
 - Adding units to a table is atomic: find its active order or create one, then append units at their current menu prices.
 - A new unit is unpaid and unprocessed even when other units in the order are complete.
 - Bulk actions affect only eligible units and return the resulting state; repeated requests must not duplicate effects.
-- Order totals derive from non-removed units. Paid and unpaid totals derive from each unit's Paid state.
+- Current order totals derive from non-removed units. Paid and unpaid totals derive from each non-removed unit's Paid state. Removal creates no refund action.
+- Removed units remain visible in the order with their original price and status history. Paid-unit removal records the acting account and date/time.
 - Closed orders and historical snapshots remain queryable. Normal administration disables referenced catalog records instead of deleting them.
 - Concurrent changes from two devices must not lose units or overwrite status changes. Use transactions and concurrency checks where needed, returning a clear conflict response to the client.
 
@@ -73,7 +74,7 @@ Store **one order unit per tap**. The UI may group identical units and display a
 1. Create the API project, persistence projects/configuration, database migrations, validation, error handling, and health endpoint.
 2. Implement account setup, login/logout, session handling, password hashing, and role authorization. Provide a secure first-administrator bootstrap procedure and account administration.
 3. Implement table and catalog CRUD, ordering/sorting, enabled state, and price validation.
-4. Implement CSV upload as a two-step flow: parse and preview validation results, then commit valid rows in a transaction. Report row numbers and reasons for rejected rows. Define duplicate and update behavior in the CSV guide before enabling import.
+4. Implement CSV upload as a two-step flow: parse and preview validation results, then commit valid rows in a transaction. Report row numbers and reasons for rejected rows. Match by stable item code; matching items update their price and category/subcategory placement. Document the identity and update rules in the CSV guide.
 5. Implement table/order queries, atomic order creation and additions, unit removal/correction rules, per-unit Processed and Paid actions, and bulk Processed/Paid actions.
 6. Implement active-order filters and historical queries. Filter semantics use the presence of at least one matching unit, rather than an order-wide flag.
 7. Add audit entries for status changes, additions, and corrections. Expose actor/time information where staff need it.
@@ -86,7 +87,7 @@ Suggested endpoint groups are `/auth`, `/accounts`, `/tables`, `/catalog/categor
 
 1. **Sign-in and home:** Simple Czech login. Present table/order and kitchen navigation to operational accounts. No account-switch control within the service workflow.
 2. **Table selection:** Large table tiles showing active-order state, amount unpaid, and undelivered count. Make returning to a table fast.
-3. **Ordering:** Category and subcategory navigation, large item buttons, one tap per unit, visible quantity feedback, and a persistent current-order list and total. Provide clear undo/removal for accidental unpaid taps.
+3. **Ordering:** Category and subcategory navigation, large item buttons, one tap per unit, visible quantity feedback, and a persistent current-order list and total. Allow unpaid-unit removal and a guarded paid-unit removal flow; keep removed units visible and identified as removed.
 4. **Active orders:** Cards with table, totals, outstanding counts, and `Nevydané` / `Nezaplacené` filters. Open an order for edits or status changes.
 5. **Kitchen:** List undelivered units, grouped by table and order with readable quantities and addition times. Allow a specific unit or selected quantity to be marked Processed; provide the specified whole-order action.
 6. **Payment:** Show grouped items with paid/unpaid quantities, allow selection of individual units or a quantity, show the amount being marked paid, then require a clear confirmation. Include the whole-order Paid action.
@@ -95,7 +96,7 @@ Suggested endpoint groups are `/auth`, `/accounts`, `/tables`, `/catalog/categor
 ### Administration screens
 
 - Manage tables, categories, subcategories, menu items, prices, and enabled state.
-- Import CSV with template download, preview, row-level errors, and a result summary.
+- Import CSV with an item-code template download, preview, row-level errors, and a result summary.
 - Manage operational accounts and administrator accounts according to role permissions.
 
 Use Czech text throughout, including validation, errors, empty states, and confirmations. Test with a phone-width viewport and touch input; avoid hover-only controls and routine free-text entry during service.
@@ -139,6 +140,6 @@ Record exact SDK, runtime, database, and Node versions in the project once imple
 
 - Local setup for SQLite and SQL Server, including migrations and test commands.
 - Administrator bootstrap and account management instructions.
-- CSV template, encoding, price format, duplicate handling, and import error rules.
+- CSV template with stable item code, encoding, price format, update behavior, duplicate handling, and import error rules.
 - TeamCity setup and required secret/configuration values.
 - Short Czech staff guide for ordering, delivery, partial payment, and correcting an accidental tap.
