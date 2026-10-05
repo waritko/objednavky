@@ -6,7 +6,7 @@ Build a Czech-language web application for restaurant staff. It must work well o
 
 - A waiter selects a table and adds menu items by tapping an item once per unit. The current order remains visible during ordering.
 - A table can have one active order. Selecting a table with an active order opens it for additions; otherwise the application creates a new order.
-- Menu items belong to a category and subcategory and have a name and price.
+- Menu items belong to a category, may optionally belong to a subcategory, and have a name and price. Items without a subcategory are orderable directly from their category.
 - Kitchen staff can see items that have not been delivered to the customer table.
 - Each ordered unit can be marked **Processed** separately. Processed means **delivered to the customer table**, not merely prepared. An action on the whole order marks all remaining units as Processed.
 - Guests may pay for part of an order. Each item, including a selected quantity of identical items, can be marked **Paid** separately. An action on the whole order marks all remaining units as Paid.
@@ -26,9 +26,9 @@ These decisions define the order, account, payment, and import workflows.
 | Preparation progress | Agreed | Use only the specified Processed state for delivery. The kitchen sees undelivered units; there is no separate Ready state. | Keeps the kitchen workflow aligned with the specified delivery status. |
 | Payment handling | Agreed | Mark selected units Paid and record the acting account and time. Payment processing happens elsewhere; this application does not collect payment or integrate a terminal. | Defines the boundary of the payment workflow. |
 | Authentication | Agreed | Use administrator and operational roles, with named accounts and username-and-password login. Each operational account can use both waiter and kitchen screens. A shared phone stays signed in during use, with no account-switch control; logout and session expiry remain available. | Establishes access control and shared-device behavior. |
-| CSV import | Agreed | Use a documented UTF-8 CSV template with stable item code, category, subcategory, name, and price; preview and validate before applying. Match by item code. Re-importing an existing item updates its price and category/subcategory placement. | A stable match prevents duplicate items when their category changes. |
+| CSV import | Agreed | Accept `ciselnik.csv` layout: `CISMAT` (stable item code), `NAZMAT` (name), `DRUMAT2` (category code), `PROCEN5` (price before VAT), and `SAZDPH` (VAT rate). Match by trimmed `CISMAT`; re-import updates price and category. Calculate the ordering price with VAT. Imported items are orderable without a subcategory; staff may assign one later. | The source has a category code but no subcategory column. |
 
-All section 2 workflow decisions are agreed. Keep the detailed import validation and error rules documented with the CSV template during implementation.
+The sample has 201 populated rows, 9 empty rows, 11 distinct category codes, and VAT rates of 10%, 12%, and 21%. Its 201 populated `CISMAT` values are unique after trimming. Import should ignore empty rows and report validation errors for populated rows.
 
 ## 3. Architecture and repository structure
 
@@ -49,14 +49,14 @@ Use one API contract shared by the mobile screens and administration. Document r
 | --- | --- |
 | Account | Identifier, login name, password hash, role, enabled flag. |
 | Table | Identifier, display name/number, sort order, enabled flag. Disabling preserves historical references. |
-| Category | Identifier, name, sort order, enabled flag. |
+| Category | Identifier, stable category code (from `DRUMAT2`), display name, sort order, enabled flag. |
 | Subcategory | Identifier, parent category, name, sort order, enabled flag. |
-| Menu item | Identifier, stable unique item code, subcategory, name, current price, sort order, enabled flag. |
+| Menu item | Identifier, stable unique item code, category, optional subcategory, name, source price before VAT, VAT rate, calculated ordering price with VAT, sort order, enabled flag. |
 | Order | Identifier, table, opened/closed times, lifecycle state, creator, concurrency token. |
-| Order unit | Identifier, order, source menu item, snapshot of item/category names and unit price, added time/account, Processed time/account, Paid time/account, optional removal time/account. Removed units remain in order history. |
+| Order unit | Identifier, order, source menu item, snapshot of item/category/optional subcategory names and unit price, added time/account, Processed time/account, Paid time/account, optional removal time/account. Removed units remain in order history. |
 | Audit event | Order, actor, timestamp, action, affected unit(s), and relevant before/after values for corrections. |
 
-Store **one order unit per tap**. The UI may group identical units and display a quantity, but each unit retains independent Processed and Paid states. This supports selected-quantity actions without rounding or ambiguity. Prices and names are copied into the order when a unit is added so later catalog edits do not change historical receipts or totals. Use decimal money values, a consistent currency setting, and explicit rounding rules.
+Store **one order unit per tap**. The UI may group identical units and display a quantity, but each unit retains independent Processed and Paid states. This supports selected-quantity actions without rounding or ambiguity. Calculate each item's ordering price as `PROCEN5 × (1 + SAZDPH / 100)`, using decimal arithmetic and rounding the unit price to two decimal places. Prices and names are copied into the order when a unit is added so later catalog edits do not change historical receipts or totals.
 
 ### Rules enforced by the backend
 
@@ -74,7 +74,7 @@ Store **one order unit per tap**. The UI may group identical units and display a
 1. Create the API project, persistence projects/configuration, database migrations, validation, error handling, and health endpoint.
 2. Implement account setup, login/logout, session handling, password hashing, and role authorization. Provide a secure first-administrator bootstrap procedure and account administration.
 3. Implement table and catalog CRUD, ordering/sorting, enabled state, and price validation.
-4. Implement CSV upload as a two-step flow: parse and preview validation results, then commit valid rows in a transaction. Report row numbers and reasons for rejected rows. Match by stable item code; matching items update their price and category/subcategory placement. Document the identity and update rules in the CSV guide.
+4. Implement CSV upload as a two-step flow: parse and preview validation results, then commit valid rows in a transaction. Accept the five-column `ciselnik.csv` layout. Trim padding around item codes, names, and category codes while preserving codes as text, including letters and leading zeroes. Ignore empty rows. Report row numbers and reasons for rejected populated rows. Match by stable item code; matching items update their source price, VAT rate, calculated ordering price, and category. If an item's category changes, clear a subcategory that belonged to the old category. New imports remain orderable without a subcategory; provide optional bulk assignment in administration. Document the mapping and update rules in the CSV guide.
 5. Implement table/order queries, atomic order creation and additions, unit removal/correction rules, per-unit Processed and Paid actions, and bulk Processed/Paid actions.
 6. Implement active-order filters and historical queries. Filter semantics use the presence of at least one matching unit, rather than an order-wide flag.
 7. Add audit entries for status changes, additions, and corrections. Expose actor/time information where staff need it.
@@ -87,7 +87,7 @@ Suggested endpoint groups are `/auth`, `/accounts`, `/tables`, `/catalog/categor
 
 1. **Sign-in and home:** Simple Czech login. Present table/order and kitchen navigation to operational accounts. No account-switch control within the service workflow.
 2. **Table selection:** Large table tiles showing active-order state, amount unpaid, and undelivered count. Make returning to a table fast.
-3. **Ordering:** Category and subcategory navigation, large item buttons, one tap per unit, visible quantity feedback, and a persistent current-order list and total. Allow unpaid-unit removal and a guarded paid-unit removal flow; keep removed units visible and identified as removed.
+3. **Ordering:** Category navigation showing both items directly in the category and optional subcategory groups, large item buttons, one tap per unit, visible quantity feedback, and a persistent current-order list and total. Allow unpaid-unit removal and a guarded paid-unit removal flow; keep removed units visible and identified as removed.
 4. **Active orders:** Cards with table, totals, outstanding counts, and `Nevydané` / `Nezaplacené` filters. Open an order for edits or status changes.
 5. **Kitchen:** List undelivered units, grouped by table and order with readable quantities and addition times. Allow a specific unit or selected quantity to be marked Processed; provide the specified whole-order action.
 6. **Payment:** Show grouped items with paid/unpaid quantities, allow selection of individual units or a quantity, show the amount being marked paid, then require a clear confirmation. Include the whole-order Paid action.
@@ -95,8 +95,8 @@ Suggested endpoint groups are `/auth`, `/accounts`, `/tables`, `/catalog/categor
 
 ### Administration screens
 
-- Manage tables, categories, subcategories, menu items, prices, and enabled state.
-- Import CSV with an item-code template download, preview, row-level errors, and a result summary.
+- Manage tables, categories, subcategories, menu items, prices, and enabled state. Support bulk assignment of imported items to subcategories.
+- Import CSV in the `ciselnik.csv` layout, with a template download, preview, row-level errors, and a result summary.
 - Manage operational accounts and administrator accounts according to role permissions.
 
 Use Czech text throughout, including validation, errors, empty states, and confirmations. Test with a phone-width viewport and touch input; avoid hover-only controls and routine free-text entry during service.
@@ -105,7 +105,7 @@ Use Czech text throughout, including validation, errors, empty states, and confi
 
 ### Backend and database
 
-- Unit-test order totals, active-order filter predicates, status transitions, and CSV validation.
+- Unit-test order totals, active-order filter predicates, status transitions, and CSV validation, including padded alphanumeric codes, quoted names containing commas, empty rows, and VAT-inclusive unit-price rounding from `ciselnik.csv`.
 - Run the same integration scenarios against **SQLite and SQL Server**: table/order creation, concurrent additions, selected-quantity Processed and Paid actions, bulk actions, later additions, catalog price changes, removal rules, and closure.
 - Apply migrations to fresh databases for each provider and verify historical snapshot queries after catalog changes.
 - Use an isolated SQL Server test instance in CI; never make integration tests depend on production data.
@@ -140,6 +140,6 @@ Record exact SDK, runtime, database, and Node versions in the project once imple
 
 - Local setup for SQLite and SQL Server, including migrations and test commands.
 - Administrator bootstrap and account management instructions.
-- CSV template with stable item code, encoding, price format, update behavior, duplicate handling, and import error rules.
+- CSV guide based on `ciselnik.csv`, including column meanings, classification mapping, price calculation, encoding, update behavior, duplicate handling, and import error rules.
 - TeamCity setup and required secret/configuration values.
 - Short Czech staff guide for ordering, delivery, partial payment, and correcting an accidental tap.
