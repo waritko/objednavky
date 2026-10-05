@@ -6,6 +6,7 @@ using RestaurantOrders.Api.Domain;
 using RestaurantOrders.Api.Persistence;
 using RestaurantOrders.Api.Auth;
 using RestaurantOrders.Api.Catalog;
+using RestaurantOrders.Api.Orders;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -32,6 +33,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<CsvImportService>();
+builder.Services.AddScoped<OrderService>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = 429;
@@ -96,6 +98,7 @@ app.MapGet("/health/database", async (RestaurantDbContext db, CancellationToken 
         : Results.Problem("Database unavailable", statusCode: StatusCodes.Status503ServiceUnavailable));
 app.MapAuthEndpoints();
 app.MapCatalogEndpoints();
+app.MapOrderEndpoints();
 app.Run();
 
 public partial class Program;

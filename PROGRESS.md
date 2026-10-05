@@ -55,3 +55,12 @@ Next: backend step 5, atomic table/order creation and additions, unit removal, p
 - TeamCity DSL import and a native Linux agent run remain unverified: this session has no connected TeamCity server or Linux agent. SQL Server, frontend, formatting, and phone-flow checks are not yet implemented in CI; this is the current backend pipeline, not the full planned acceptance gate.
 
 Next: resume backend step 5 (ordering), then expand CI as the remaining application and provider tests are implemented.
+
+## 2026-10-05 — Step 5: Atomic orders and unit actions
+
+- Implemented atomic table-order creation and additions, immutable item/category/price snapshots, and enabled-parent validation. Client-generated unit IDs make retries safe without suppressing intentional repeated taps.
+- Added selected-unit and whole-order delivery/payment/removal, guarded paid removal, authoritative totals, optimistic concurrency, serializable transactions, and automatic closure/table reuse. Removed units retain payment history and actor/time records.
+- Added transactional audit events alongside mutations and documented the API in `docs/orders.md`.
+- Verified the complete SQLite HTTP smoke suite, including retries, repeated taps, partial payment, paid removal, stale-token rejection, later additions at changed prices, idempotent delivery, closure, read-only history and disabled categories. Existing NuGet warnings remain; SQL Server is not yet verified.
+
+Next: active-order filters, paginated history and audit queries (steps 6–7), then the React application and expanded CI.
