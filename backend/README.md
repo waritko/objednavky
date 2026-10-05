@@ -21,3 +21,6 @@ dotnet ef database update --project backend/RestaurantOrders.Api --context SqlSe
 
 `GET /health` checks the API process; `GET /health/database` checks the configured
 database connection. Migrations are separate per provider under `Persistence/Migrations`.
+
+See [account setup and API contract](../docs/authentication.md) for administrator
+bootstrap, sessions, account management, and the authentication smoke test.
