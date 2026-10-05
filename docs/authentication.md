@@ -63,4 +63,4 @@ The executable smoke suite applies SQLite migrations to a unique temporary
 database and starts the API on an available loopback port. It checks bootstrap,
 both roles, authorization, CSRF, duplicate usernames, last-administrator protection,
 password reset, disabling, session invalidation, and logout. It exits nonzero on
-failure and removes its test database. SQL Server coverage remains to be added.
+failure and removes its test database. See [verification](testing.md) for the same suite on isolated SQL Server and the phone browser tests.

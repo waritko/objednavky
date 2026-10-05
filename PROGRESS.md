@@ -89,3 +89,13 @@ Next: React operational and administration screens, then provider/concurrency ve
 - Both 390×844 and 360×800 touch viewports passed; screenshots show no horizontal overflow and no browser runtime errors. Production build and formatting checks passed. In-app browser execution tools were unavailable, so the browser verification uses standalone Playwright.
 
 Next: SQLite/SQL Server concurrency matrix, integrated frontend/API artifact, full TeamCity checks and deployment/staff documentation.
+
+## 2026-10-05 — Step 10: Both database providers and concurrency
+
+- Refactored the HTTP harness to run against fresh SQLite or uniquely named SQL Server databases, with cleanup restricted to the database it created.
+- Added a disposable SQL Server 2022 Docker runner with an image digest, random in-memory credentials and a loopback ephemeral port. No existing SQL Server databases were changed.
+- Added simultaneous first-order creation/additions, duplicate retries, competing status writes, conflict recovery, atomic foreign-unit rejection and final-unit-removal checks.
+- SQL Server testing found EF wraps deadlocks in InvalidOperationException. Fixed nested database-conflict detection so these requests return 409 instead of 500.
+- Full SQLite and SQL Server HTTP suites passed, including fresh migrations, snapshots, partial actions, closure and concurrency. SQL Server 16.0.4295.3 and SQLite 3.49.1 were verified; provider collation differences are explicitly covered. Added `docs/testing.md` with exact tested versions and commands.
+
+Next: final CI/package integration, operational/deployment guides, and final verification.

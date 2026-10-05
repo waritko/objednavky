@@ -41,8 +41,7 @@ public sealed class OrderService(RestaurantDbContext db)
             return result;
         }
         catch (DbUpdateException) { return Conflict(); }
-        catch (SqliteException e) when (e.SqliteErrorCode is 5 or 6 or 19) { return Conflict(); }
-        catch (SqlException e) when (e.Number is 1205 or 2601 or 2627) { return Conflict(); }
+        catch (Exception e) when (DatabaseConflicts.IsConflict(e)) { return Conflict(); }
     }
 
     public Task<IResult> Add(Guid tableId, AddUnitInput input, Guid actor, CancellationToken ct) => Write(async () =>
