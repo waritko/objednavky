@@ -9,6 +9,19 @@ One active order per table; one saved unit per tap; independent delivery/payment
 Install .NET SDK **10.0.201**, Node **25.9.0** and npm **11.12.1**. From the repository root, using PowerShell:
 
 ```powershell
+.\scripts\start-local.ps1 -BootstrapAdmin
+```
+
+On subsequent runs, use `.\scripts\start-local.ps1` (add `-SkipInstall` to reuse
+installed frontend dependencies). The script builds the API, applies migrations,
+and starts both servers. Open **http://127.0.0.1:5173**; press **Ctrl+C** to stop.
+The first-run option prompts for administrator credentials and refuses to overwrite
+existing accounts. Database provider and connection-string environment settings
+are respected, so check those before running migrations against a custom database.
+
+To run the same steps manually:
+
+```powershell
 dotnet restore backend/RestaurantOrders.SmokeTests
 dotnet run --project backend/RestaurantOrders.Api -- --migrate
 $env:Bootstrap__Username = 'admin'
