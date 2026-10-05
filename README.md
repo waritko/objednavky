@@ -6,7 +6,7 @@ One active order per table; one saved unit per tap; independent delivery/payment
 
 ## Start locally
 
-Install .NET SDK **10.0.201**, Node **25.9.0** and npm **11.12.1**. From the repository root, using PowerShell:
+Install any stable .NET **10.0** SDK, Node **25.9.0** and npm **11.12.1**. From the repository root, using PowerShell:
 
 ```powershell
 .\scripts\start-local.ps1 -BootstrapAdmin

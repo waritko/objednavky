@@ -1,6 +1,6 @@
 # Backend setup
 
-Requires .NET SDK 10.0.201. The API uses SQLite by default. Choose SQL Server with
+Requires any stable .NET 10.0 SDK. The API uses SQLite by default. Choose SQL Server with
 `Database__Provider=SqlServer` and set `ConnectionStrings__RestaurantOrders` to a
 SQL Server connection string. Keep credentials in environment variables or local
 user secrets.

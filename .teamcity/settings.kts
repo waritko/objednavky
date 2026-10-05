@@ -41,7 +41,7 @@ object BackendCi : BuildType({
 
     requirements {
         equals("teamcity.agent.jvm.os.name", "Linux")
-        exists("DotNetCoreSDK10.0.112_Path")
+        exists("DotNetCoreSDK10.0_Path")
     }
 
     failureConditions {
