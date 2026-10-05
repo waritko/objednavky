@@ -27,14 +27,16 @@ its dependencies and plugin versions must match that server.
 
 - Linux agent supported by the installed TeamCity server and .NET 10.
 - Bash on PATH (the script is invoked with `bash`, so an executable bit is optional).
-- .NET SDK **10.0.201** on PATH, pinned by `global.json`; package references use
+- .NET SDK **10.0.112** on PATH, pinned by `global.json`; package references use
   EF Core **10.0.5**. SDK roll-forward is disabled for reproducible builds.
 - Access to NuGet feeds for restore and vulnerability metadata.
 - Permission to start child `dotnet` processes, listen on a loopback ephemeral
   port, and write the agent user's temporary and ASP.NET Data Protection folders.
 
-The agent OS requirement restricts scheduling to Linux. Missing SDKs fail in
-the Restore step with the .NET SDK diagnostic. No administrator bootstrap secret,
+The agent requirements restrict scheduling to Linux agents reporting
+`DotNetCoreSDK10.0.112_Path`. Restart the agent after installing the SDK so it
+refreshes its detected capabilities. Keep this requirement and `global.json`
+in sync when changing the SDK version. No administrator bootstrap secret,
 database password, Docker installation, Node installation, or production database
 is required for this configuration.
 
