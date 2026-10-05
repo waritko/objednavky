@@ -32,6 +32,8 @@ internal static class OrderChecks
         var stale = order.GetProperty("concurrencyToken").GetGuid();
         order = await Change("paid", [first]);
         Assert(order.GetProperty("paid").GetDecimal() == 112 && order.GetProperty("unpaid").GetDecimal() == 112, "selected quantity payment");
+        var filtered = await Expect(await staff.GetAsync("/orders?unpaid=true&undelivered=true"));
+        Assert(filtered.EnumerateArray().Any(x => x.GetProperty("id").GetGuid() == id), "filters match individual outstanding units");
         await Expect(await staff.PostAsJsonAsync($"/orders/{id}/processed", new { concurrencyToken = stale, all = true }), 409);
         await Change("removed", [first], status: 400);
         order = await Change("removed", [first], confirm: true);
@@ -46,6 +48,8 @@ internal static class OrderChecks
         Assert(order.GetProperty("total").GetDecimal() == 336 && order.GetProperty("undeliveredCount").GetInt32() == 1, "new price applies only to new outstanding unit");
         order = await Change("paid", all: true);
         Assert(order.GetProperty("state").GetString() == "Active", "payment alone does not close undelivered order");
+        filtered = await Expect(await staff.GetAsync("/orders?unpaid=true"));
+        Assert(filtered.EnumerateArray().All(x => x.GetProperty("id").GetGuid() != id), "paid order excluded from unpaid filter");
         order = await Change("processed", all: true);
         Assert(order.GetProperty("state").GetString() == "Closed", "automatic closure");
         await Change("removed", all: true, confirm: true, status: 409);
@@ -54,6 +58,12 @@ internal static class OrderChecks
         Assert(order.GetProperty("id").GetGuid() != id, "closed table starts a new order");
         var old = await Expect(await staff.GetAsync($"/orders/{id}"));
         Assert(old.GetProperty("units")[0].GetProperty("itemName").GetString() == "Původní jídlo", "history preserves original name");
+        var history = await Expect(await staff.GetAsync($"/orders/history?tableId={table}&pageSize=1"));
+        Assert(history.GetProperty("total").GetInt32() == 1 && history.GetProperty("orders")[0].GetProperty("id").GetGuid() == id, "paginated closed history");
+        await Expect(await staff.GetAsync("/orders/history?page=0"), 400);
+        var audit = await Expect(await staff.GetAsync($"/orders/{id}/audit"));
+        Assert(audit.GetArrayLength() == 10 && audit.EnumerateArray().All(x => x.GetProperty("username").GetString() == "waiter"), "audit records each real change and actor without retry duplicates");
+        await Expect(await anonymous.GetAsync($"/orders/{id}/audit"), 401);
         await Expect(await admin.PutAsJsonAsync($"/catalog/categories/{category}", new { code = "ORDER", name = "Zakázaná", enabled = false }));
         await Expect(await staff.PostAsJsonAsync($"/tables/{table}/units", new { menuItemId = item, unitId = Guid.NewGuid() }), 400);
         Assert(true, "disabled category prevents ordering");

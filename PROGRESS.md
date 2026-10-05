@@ -64,3 +64,11 @@ Next: resume backend step 5 (ordering), then expand CI as the remaining applicat
 - Verified the complete SQLite HTTP smoke suite, including retries, repeated taps, partial payment, paid removal, stale-token rejection, later additions at changed prices, idempotent delivery, closure, read-only history and disabled categories. Existing NuGet warnings remain; SQL Server is not yet verified.
 
 Next: active-order filters, paginated history and audit queries (steps 6–7), then the React application and expanded CI.
+
+## 2026-10-05 — Steps 6–7: Active filters, history and audit queries
+
+- Added unit-based undelivered/unpaid filters with AND semantics, paginated closed-order history and table filtering, plus authenticated actor/time audit queries.
+- History uses stable ID pagination across providers; active orders and audit entries use chronological ordering. Documented the query contracts and this ordering distinction.
+- Verified the full SQLite smoke suite with filter exclusions, history pagination/validation, immutable snapshots, audit counts and authenticated access. Every real unit mutation is audited; retries create no duplicate audit records.
+
+Next: React operational and administration screens, then provider/concurrency verification and full CI integration.
