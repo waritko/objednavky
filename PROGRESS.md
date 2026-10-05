@@ -44,3 +44,14 @@ Next: backend step 4, CSV preview and transactional import using `ciselnik.csv`.
 - No migration was needed. Existing NU1900 vulnerability-feed and NU1510 dependency warnings remain. SQL Server execution is still pending an isolated instance; frontend import UI is not yet implemented.
 
 Next: backend step 5, atomic table/order creation and additions, unit removal, per-unit and bulk Processed/Paid actions. React, TeamCity, and SQL Server verification remain pending delivery work.
+
+## 2026-10-05 — TeamCity CI configuration
+
+- Added `.teamcity/settings.kts` targeting TeamCity 2026.1 (build 222521), with Linux agents as requested. The build uses the settings repository VCS root, a default-branch trigger, clean checkout, and a 20-minute timeout.
+- Added `scripts/ci.sh` with restore, Release build, executable SQLite HTTP smoke tests, and API publish steps. Failures stop the pipeline; the smoke suite reports a TeamCity test result and the API is archived as `restaurant-orders-api.zip`.
+- Pinned .NET SDK 10.0.201 in `global.json`, enforced LF for shell scripts, ignored build artifacts, and fixed the smoke harness to locate the API in the actual build configuration instead of hard-coded Debug.
+- Documented Linux agent prerequisites, versioned-settings import, repository credentials, artifact behavior, local reproduction, and remaining coverage in `docs/teamcity.md`.
+- Verified Bash syntax and the entire CI script using Git Bash on this Windows workstation: restore, Release build, all authentication/catalog/import checks against fresh SQLite, and API publish passed. Existing NU1900 vulnerability-feed and NU1510 dependency warnings remain. `git diff --check` passed.
+- TeamCity DSL import and a native Linux agent run remain unverified: this session has no connected TeamCity server or Linux agent. SQL Server, frontend, formatting, and phone-flow checks are not yet implemented in CI; this is the current backend pipeline, not the full planned acceptance gate.
+
+Next: resume backend step 5 (ordering), then expand CI as the remaining application and provider tests are implemented.

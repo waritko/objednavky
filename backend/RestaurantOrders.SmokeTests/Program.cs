@@ -10,7 +10,8 @@ var database = Path.Combine(Path.GetTempPath(), $"restaurant-auth-{Guid.NewGuid(
 var connection = $"Data Source={database}";
 var options = new DbContextOptionsBuilder<SqliteRestaurantDbContext>().UseSqlite(connection).Options;
 await using (var db = new SqliteRestaurantDbContext(options)) await db.Database.MigrateAsync();
-var api = Path.Combine(root, "RestaurantOrders.Api/bin/Debug/net10.0/RestaurantOrders.Api.dll");
+var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent!.Name;
+var api = Path.Combine(root, $"RestaurantOrders.Api/bin/{configuration}/net10.0/RestaurantOrders.Api.dll");
 var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
 listener.Start();
 var port = ((IPEndPoint)listener.LocalEndpoint).Port;

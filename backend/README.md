@@ -27,3 +27,6 @@ bootstrap, sessions, account management, and the authentication smoke test.
 
 See [catalog API](../docs/catalog.md) and [CSV import](../docs/csv-import.md) for
 menu administration and the preview/commit import workflow.
+
+See [TeamCity CI setup](../docs/teamcity.md) for the Linux build agent requirements,
+versioned settings import, and local CI script.
