@@ -72,3 +72,11 @@ Next: active-order filters, paginated history and audit queries (steps 6–7), t
 - Verified the full SQLite smoke suite with filter exclusions, history pagination/validation, immutable snapshots, audit counts and authenticated access. Every real unit mutation is audited; retries create no duplicate audit records.
 
 Next: React operational and administration screens, then provider/concurrency verification and full CI integration.
+
+## 2026-10-05 — Step 8: React operational application
+
+- Added the React/TypeScript/Vite application with Czech sign-in, role-aware navigation, table tiles, direct-category/subcategory ordering, active filters, kitchen quantities/times, payment, removed-unit visibility, closed history and named audit entries.
+- Added per-group quantity controls and individual-unit checkboxes, selected and whole-order actions, payment amount confirmation, guarded corrections, server-owned totals, periodic refresh and conflict recovery.
+- Added a sequential tap queue with per-tap UUIDs and session-storage retry recovery. Repeated taps remain separate units. Added responsive layouts, 48px controls and keyboard focus styles without runtime CDN dependencies.
+- Verified TypeScript/production build, formatting and unit-grouping tests. Browser phone-flow verification remains for the end-to-end step. npm installation reports no vulnerabilities.
+- Pinned exact frontend dependencies and documented local development. Administration screens and integrated deployment/CI are next.
