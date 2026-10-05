@@ -1,7 +1,8 @@
 # TeamCity CI
 
 The checked-in `.teamcity/settings.kts` targets **TeamCity 2026.1 (build 222521)**
-with DSL version `2026.1`. It defines one build configuration, **Backend CI**.
+with DSL version `2026.1`. It defines one build configuration, **Restaurant Orders CI**
+(the original stable `BackendCi` ID is retained).
 
 ## Server setup
 
@@ -13,7 +14,7 @@ with DSL version `2026.1`. It defines one build configuration, **Backend CI**.
    root, select **Kotlin**, use `.teamcity` as the settings directory, and select
    the option to use/import the settings already in the repository. Do not
    overwrite the repository with generated settings.
-4. Confirm that TeamCity accepts the DSL and creates **Backend CI**, attach an
+4. Confirm that TeamCity accepts the DSL and creates **Restaurant Orders CI**, attach an
    authorized compatible agent, and run the first build manually. Subsequent
    default-branch changes trigger builds automatically.
 
@@ -30,6 +31,13 @@ its dependencies and plugin versions must match that server.
 - .NET SDK **10.0.112** on PATH, pinned by `global.json`; package references use
   EF Core **10.0.5**. SDK roll-forward is disabled for reproducible builds.
 - Access to NuGet feeds for restore and vulnerability metadata.
+- Node **25.9.0** (also in `.node-version`), npm **11.12.1**, and npm registry access.
+- Docker Engine with Linux containers, permission to use its socket, and at least
+  2 GB available for the SQL Server container. The exact image digest is in
+  `scripts/sqlserver-image.txt`; the runner creates a random password in memory.
+- Playwright Chromium system dependencies. During agent provisioning, run
+  `npx playwright install-deps chromium` from `frontend/` after `npm ci`.
+  CI downloads the matching browser with `npx playwright install chromium`.
 - Permission to start child `dotnet` processes, listen on a loopback ephemeral
   port, and write the agent user's temporary and ASP.NET Data Protection folders.
 
@@ -39,6 +47,12 @@ refreshes its detected capabilities. Keep this requirement and `global.json`
 in sync when changing the SDK version. No administrator bootstrap secret,
 database password, Docker installation, Node installation, or production database
 is required for this configuration.
+The agent OS requirement restricts scheduling to Linux. Missing SDKs/Node/npm fail
+in Restore. Ports 5080 and 5173 must be free for browser fixtures; the SQL Server
+container uses an ephemeral loopback port. No production database, administrator
+bootstrap secret or preconfigured test database password is required. Docker
+creates the isolated SQL instance; the harness creates and drops only its own
+randomly named database.
 
 ## Build behavior and local reproduction
 
@@ -48,33 +62,34 @@ From the repository root:
 bash scripts/ci.sh
 ```
 
-TeamCity calls the same script in four separate steps:
+TeamCity calls the same script in six separate steps:
 
-1. **Restore** prints SDK/runtime information and restores the smoke project and
-   its API project reference.
-2. **Build** builds both projects in Release with continuous-integration build
-   metadata enabled.
-3. **Test** runs the executable smoke suite against a fresh temporary SQLite
-   database, including migrations, account bootstrap, authentication, role
-   authorization, catalog validation, and transactional CSV import. The suite
-   starts its own API process and removes the test database after execution.
-4. **Publish** produces a framework-dependent API in `artifacts/api`. TeamCity
-   archives it as `restaurant-orders-api.zip`. Deployment still requires an
-   appropriate .NET/ASP.NET Core runtime, configuration, and database migrations.
+1. **Restore** verifies versions, restores backend/frontend dependencies and installs Chromium.
+2. **Check** verifies C# whitespace, Prettier formatting, TypeScript and Git whitespace.
+3. **Build** builds both .NET projects in Release and creates the React production bundle.
+4. **Test** runs real HTTP/concurrency scenarios against freshly migrated SQLite and
+   isolated SQL Server, then frontend unit tests. Fixtures clean up their databases.
+5. **Publish** creates the combined frontend/API package in `artifacts/api`.
+6. **Browser** starts that actual package with an isolated SQLite database and runs
+   both phone touch workflows, including partial payments and history.
 
-The suite is an executable, not a test-framework project: `dotnet test` would not
-run its checks. The wrapper emits one TeamCity test result for the whole suite;
-individual PASS checks remain visible in the build log. Any failed native command
-returns a nonzero script exit code. Test failure fails the build and prevents
-publishing. Clean checkout prevents stale artifacts; the build timeout is 20 minutes.
+TeamCity archives the package as `restaurant-orders-app.zip` and retains JUnit XML,
+phone screenshots and failure traces. Publishing here means producing a build
+artifact; the pipeline does not deploy to a server. Deployment still requires
+configuration, HTTPS, a .NET/ASP.NET Core runtime and database migrations.
 
-## Coverage still to add
+The backend suite is an executable: `dotnet test` does not run it. The wrapper
+emits a TeamCity test result per suite; individual PASS checks remain in the log.
+Any failed command fails the build. Clean checkout prevents stale artifacts; the
+timeout is 30 minutes. Browser failures fail the build even when the diagnostic
+package artifact already exists. Do not deploy artifacts from failed builds.
 
-This configuration covers the implemented backend. SQL Server integration tests,
-frontend lint/type checks/build/tests, phone end-to-end tests, and formatting
-checks are pending implementation. They are not represented as passing or skipped
-placeholder steps. Add an isolated SQL Server test database and its test harness
-before enabling the provider matrix described in `PLAN.md`.
+## Verification boundary
+
+The application checks are runnable locally with the same script. Importing the
+Kotlin DSL and running it on an actual TeamCity agent require access to your
+TeamCity installation; neither is implied by a successful local script run.
+See [verification](testing.md) for tested versions, provider differences and fixtures.
 
 References: [JetBrains Kotlin DSL](https://www.jetbrains.com/help/teamcity/kotlin-dsl.html),
 [DSL version upgrades](https://www.jetbrains.com/help/teamcity/upgrading-dsl.html), and

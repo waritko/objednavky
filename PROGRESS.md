@@ -64,3 +64,53 @@ Next: resume backend step 5 (ordering), then expand CI as the remaining applicat
 - Verified the complete SQLite HTTP smoke suite, including retries, repeated taps, partial payment, paid removal, stale-token rejection, later additions at changed prices, idempotent delivery, closure, read-only history and disabled categories. Existing NuGet warnings remain; SQL Server is not yet verified.
 
 Next: active-order filters, paginated history and audit queries (steps 6–7), then the React application and expanded CI.
+
+## 2026-10-05 — Steps 6–7: Active filters, history and audit queries
+
+- Added unit-based undelivered/unpaid filters with AND semantics, paginated closed-order history and table filtering, plus authenticated actor/time audit queries.
+- History uses stable ID pagination across providers; active orders and audit entries use chronological ordering. Documented the query contracts and this ordering distinction.
+- Verified the full SQLite smoke suite with filter exclusions, history pagination/validation, immutable snapshots, audit counts and authenticated access. Every real unit mutation is audited; retries create no duplicate audit records.
+
+Next: React operational and administration screens, then provider/concurrency verification and full CI integration.
+
+## 2026-10-05 — Step 8: React operational application
+
+- Added the React/TypeScript/Vite application with Czech sign-in, role-aware navigation, table tiles, direct-category/subcategory ordering, active filters, kitchen quantities/times, payment, removed-unit visibility, closed history and named audit entries.
+- Added per-group quantity controls and individual-unit checkboxes, selected and whole-order actions, payment amount confirmation, guarded corrections, server-owned totals, periodic refresh and conflict recovery.
+- Added a sequential tap queue with per-tap UUIDs and session-storage retry recovery. Repeated taps remain separate units. Added responsive layouts, 48px controls and keyboard focus styles without runtime CDN dependencies.
+- Verified TypeScript/production build, formatting and unit-grouping tests. Browser phone-flow verification remains for the end-to-end step. npm installation reports no vulnerabilities.
+- Pinned exact frontend dependencies and documented local development. Administration screens and integrated deployment/CI are next.
+
+## 2026-10-05 — Step 9: Administration and phone end-to-end verification
+
+- Added administrator forms for tables, categories, subcategories, items, enabled states, sorting and accounts; bulk subcategory assignment; CSV template/file upload, UTF-8/Windows-1250 decoding, preview errors and import summary.
+- Added an explicit API `--migrate` command for setup and isolated test fixtures.
+- Added Playwright phone tests backed by a temporary SQLite database and real API. Verified administrator table/CSV/account setup, staff-only navigation, repeated touch additions, reopening the order, selected delivery/payment, kitchen quantities, bulk completion, closed history and named audit entries.
+- Both 390×844 and 360×800 touch viewports passed; screenshots show no horizontal overflow and no browser runtime errors. Production build and formatting checks passed. In-app browser execution tools were unavailable, so the browser verification uses standalone Playwright.
+
+Next: SQLite/SQL Server concurrency matrix, integrated frontend/API artifact, full TeamCity checks and deployment/staff documentation.
+
+## 2026-10-05 — Step 10: Both database providers and concurrency
+
+- Refactored the HTTP harness to run against fresh SQLite or uniquely named SQL Server databases, with cleanup restricted to the database it created.
+- Added a disposable SQL Server 2022 Docker runner with an image digest, random in-memory credentials and a loopback ephemeral port. No existing SQL Server databases were changed.
+- Added simultaneous first-order creation/additions, duplicate retries, competing status writes, conflict recovery, atomic foreign-unit rejection and final-unit-removal checks.
+- SQL Server testing found EF wraps deadlocks in InvalidOperationException. Fixed nested database-conflict detection so these requests return 409 instead of 500.
+- Full SQLite and SQL Server HTTP suites passed, including fresh migrations, snapshots, partial actions, closure and concurrency. SQL Server 16.0.4295.3 and SQLite 3.49.1 were verified; provider collation differences are explicitly covered. Added `docs/testing.md` with exact tested versions and commands.
+
+Next: final CI/package integration, operational/deployment guides, and final verification.
+
+## 2026-10-05 — Step 11: Packaging, complete CI and delivery documentation
+
+- Packaged the React production build with the ASP.NET API under `wwwroot`, added persistent configurable Data Protection storage and disabled caching for API responses.
+- Expanded the Linux TeamCity configuration and shared CI script to restore, check C#/frontend formatting and types, build, run the SQLite/SQL Server concurrency matrix and frontend tests, package the app, and run both phone workflows against that actual package. Artifacts include the app, JUnit XML, screenshots and failure traces.
+- Added local quick start, production/provider/migration/backup guidance, exact version records and a Czech staff guide. Updated existing backend, frontend, authentication and TeamCity documentation.
+- Removed the redundant Identity package. A successful fresh vulnerability lookup identified the old native SQLite dependency; upgraded it to SQLite 3.53.3. NuGet restore and Release builds now finish with zero warnings. No schema change was required.
+- Full `scripts/ci.sh` passed via Git Bash: restore, C# formatting, Prettier, TypeScript, Release builds, both provider suites, frontend unit tests, combined package and both browser viewports. Browser checks also prove retry after a server-committed/lost response creates no duplicate, cancelling paid removal has no effect, and confirmed paid removal retains the visible unit history.
+- Independently verified restore, C# formatting and the complete SQLite HTTP/concurrency suite on native Linux in the .NET SDK 10.0.201 container. Final frontend build and both packaged phone tests passed after the final Czech-error/login refinements.
+
+## Delivery status
+
+All five planned implementation stages are complete in the repository: foundation; catalog/import; ordering; service/payment; history/audit/concurrency and documentation. Both database providers migrate and pass the application suite; both phone acceptance flows pass. Six implementation commits in this run record the completed steps, each pushed to `origin/master`.
+
+External verification remains: import the Kotlin DSL into the actual TeamCity 2026.1 server and run on its configured Linux agent; configure and verify production HTTPS, secrets, backups and deployment. No TeamCity server or production deployment was connected in this session. These deployment-specific checks are documented rather than represented as executed.

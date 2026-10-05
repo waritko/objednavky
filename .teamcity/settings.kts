@@ -11,8 +11,8 @@ project {
 
 object BackendCi : BuildType({
     id("BackendCi")
-    name = "Backend CI"
-    description = "Release build, fresh SQLite migration and HTTP smoke tests, API artifact"
+    name = "Restaurant Orders CI"
+    description = "API and React checks, SQLite/SQL Server concurrency matrix, packaged phone workflows"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -25,7 +25,7 @@ object BackendCi : BuildType({
     }
 
     steps {
-        for (stage in listOf("Restore", "Build", "Test", "Publish")) {
+        for (stage in listOf("Restore", "Check", "Build", "Test", "Publish", "Browser")) {
             script {
                 name = stage
                 scriptContent = "bash scripts/ci.sh $stage"
@@ -47,8 +47,13 @@ object BackendCi : BuildType({
     failureConditions {
         nonZeroExitCode = true
         testFailure = true
-        executionTimeoutMin = 20
+        executionTimeoutMin = 30
     }
 
-    artifactRules = "artifacts/api/** => restaurant-orders-api.zip"
+    artifactRules = """
+        artifacts/api/** => restaurant-orders-app.zip
+        artifacts/*-results.xml
+        artifacts/*.png
+        frontend/test-results/** => browser-test-results.zip
+    """.trimIndent()
 })

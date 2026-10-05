@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantOrders.Api.Persistence;
 
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
-var database = Path.Combine(Path.GetTempPath(), $"restaurant-auth-{Guid.NewGuid():N}.db");
-var connection = $"Data Source={database}";
-var options = new DbContextOptionsBuilder<SqliteRestaurantDbContext>().UseSqlite(connection).Options;
-await using (var db = new SqliteRestaurantDbContext(options)) await db.Database.MigrateAsync();
+await using var database = new TestDatabase(args.Contains("--sqlserver"));
+await database.Initialize();
 var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent!.Name;
 var api = Path.Combine(root, $"RestaurantOrders.Api/bin/{configuration}/net10.0/RestaurantOrders.Api.dll");
 var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
@@ -24,8 +22,8 @@ Process Start(bool bootstrap)
     if (bootstrap) start.ArgumentList.Add("--bootstrap-admin");
     start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
     start.Environment["ASPNETCORE_URLS"] = address;
-    start.Environment["Database__Provider"] = "Sqlite";
-    start.Environment["ConnectionStrings__RestaurantOrders"] = connection;
+    start.Environment["Database__Provider"] = database.Provider;
+    start.Environment["ConnectionStrings__RestaurantOrders"] = database.Connection;
     start.Environment["Bootstrap__Username"] = "Admin";
     start.Environment["Bootstrap__Password"] = "Smoke-test-password-123";
     var process = Process.Start(start)!;
@@ -95,6 +93,7 @@ try
     await CatalogChecks.Run(admin, staff, anonymous);
     await ImportChecks.Run(admin, staff, anonymous, Path.Combine(root, "../ciselnik.csv"));
     await OrderChecks.Run(admin, staff, anonymous);
+    await ConcurrencyChecks.Run(admin, staff);
     await Check(await admin.PutAsJsonAsync($"/accounts/{id}", new { username = "waiter", password = "Changed-password-123", role = "Operational", enabled = true }), 200, "password reset");
     await Check(await staff.GetAsync("/auth/me"), 401, "password reset revokes session");
     await Token(staff);
@@ -103,11 +102,9 @@ try
     await Check(await staff.GetAsync("/auth/me"), 401, "disabled account session denied");
     await Check(await admin.PostAsync("/auth/logout", null), 204, "logout");
     await Check(await admin.GetAsync("/auth/me"), 401, "logout clears session");
-    Console.WriteLine("Authentication, catalog and CSV import smoke tests passed (SQLite).");
+    Console.WriteLine($"Authentication, catalog, import, orders and concurrency smoke tests passed ({database.Provider}).");
 }
 finally
 {
     if (server is not null) { if (!server.HasExited) server.Kill(entireProcessTree: true); await server.WaitForExitAsync(); server.Dispose(); }
-    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-    foreach (var suffix in new[] { "", "-shm", "-wal" }) File.Delete(database + suffix);
 }

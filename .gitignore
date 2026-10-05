@@ -8,3 +8,5 @@
 .env
 artifacts/
 .teamcity/target/
+frontend/test-results/
+frontend/playwright-report/

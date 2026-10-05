@@ -61,7 +61,13 @@ internal static class ImportChecks
         Assert(result.GetProperty("created").GetInt32() == 0 && result.GetProperty("updated").GetInt32() == 201, "repeat sample import updates without duplicates");
         // Deliberately ambiguous SQLite catalog codes force a late failure after an earlier insert.
         await Expect(await admin.PostAsJsonAsync("/catalog/categories", new { code = "ambiguous", name = "One" }));
-        await Expect(await admin.PostAsJsonAsync("/catalog/categories", new { code = "AMBIGUOUS", name = "Two" }));
+        var ambiguous = await admin.PostAsJsonAsync("/catalog/categories", new { code = "AMBIGUOUS", name = "Two" });
+        if ((int)ambiguous.StatusCode == 409)
+        {
+            Assert(true, "case-insensitive provider prevents ambiguous catalog codes");
+            return;
+        }
+        await Expect(ambiguous);
         before = (await admin.GetFromJsonAsync<JsonElement>("/catalog/items")).GetArrayLength();
         preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv = CsvImportService.Header + "\nrollback-first,First,rollback-category,1,12\nrollback-second,Second,ambiguous,1,12" }));
         await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }), 409);

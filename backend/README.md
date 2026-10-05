@@ -9,14 +9,14 @@ From the repository root:
 
 ```powershell
 dotnet restore backend/RestaurantOrders.Api/RestaurantOrders.Api.csproj
-dotnet ef database update --project backend/RestaurantOrders.Api --context SqliteRestaurantDbContext
+dotnet run --project backend/RestaurantOrders.Api -- --migrate
 dotnet run --project backend/RestaurantOrders.Api
 ```
 
 For SQL Server, set the two environment variables first, then run:
 
 ```powershell
-dotnet ef database update --project backend/RestaurantOrders.Api --context SqlServerRestaurantDbContext
+dotnet run --project backend/RestaurantOrders.Api -- --migrate
 ```
 
 `GET /health` checks the API process; `GET /health/database` checks the configured
@@ -30,3 +30,9 @@ menu administration and the preview/commit import workflow.
 
 See [TeamCity CI setup](../docs/teamcity.md) for the Linux build agent requirements,
 versioned settings import, and local CI script.
+
+See the [root quick start](../README.md), [deployment guide](../docs/deployment.md),
+[orders API](../docs/orders.md) and [provider/browser verification](../docs/testing.md).
+The explicit `--migrate` command respects runtime configuration. Design-time factories
+are for generating migrations; do not use their hard-coded development connections
+to apply production migrations.
