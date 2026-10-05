@@ -42,6 +42,16 @@ npm --prefix frontend run dev
 
 Open the Vite URL and sign in. In **Správa**, configure tables/menu and create operational accounts. The bootstrap command refuses to overwrite existing accounts.
 
+## Build a deployment ZIP
+
+Run `./scripts/build.ps1` in PowerShell to build the frontend, publish the API,
+and create `artifacts/restaurant-orders-app.zip`. On Linux, use PowerShell 7:
+`pwsh -File scripts/build.ps1`.
+
+Extract the ZIP and use `run.cmd` on Windows or `bash run.sh` on Linux.
+The host needs the ASP.NET Core 10 runtime. See the
+[deployment guide](docs/deployment.md) for database initialization and HTTPS setup.
+
 ## Guides
 
 - [Staff guide (Czech)](docs/staff-guide.cs.md)

@@ -2,16 +2,39 @@
 
 ## Application package
 
-Build the combined package from the repository root:
+Build the combined ZIP package from the repository root using PowerShell
+(Windows PowerShell 5.1 or PowerShell 7 on Windows/Linux):
 
-```sh
-dotnet publish backend/RestaurantOrders.Api -c Release -o artifacts/api
-npm --prefix frontend ci
-npm --prefix frontend run build
-node scripts/package.mjs
+```powershell
+./scripts/build.ps1
 ```
 
-Deploy the entire `artifacts/api` directory to a clean release directory. It includes `wwwroot` with the React application; the API serves the UI and JSON endpoints from one origin. Node is needed for builds only. Install a current patched ASP.NET Core 10 runtime on the host. Run `dotnet RestaurantOrders.Api.dll` with the release directory as its working directory.
+The build requires the .NET 10 SDK and the Node/npm versions listed in the root
+README. It installs frontend dependencies, builds React, publishes the API in
+Release mode, and creates `artifacts/restaurant-orders-app.zip`. Each build uses
+a fresh `artifacts/publish-<id>` directory, retained for inspection; old publish
+directories can be removed when no longer needed. A successful build replaces
+the ZIP. Existing `artifacts/api` deployments and their data are left intact.
+
+Extract the ZIP into a clean release directory. It includes `wwwroot` with the
+React application; the API serves the UI and JSON endpoints from one origin.
+This framework-dependent package works on Windows and Linux. Install a current
+patched ASP.NET Core 10 runtime on the host; Node and PowerShell are only needed
+for building.
+
+Run `run.cmd` on Windows or `bash run.sh` on Linux. Both launchers select the
+release directory as their working directory, preserve environment configuration,
+and forward arguments. For first-time setup, configure the database and bootstrap
+credentials as described below, then run:
+
+| Action | Windows | Linux |
+| --- | --- | --- |
+| Apply migrations | `.\run.cmd --migrate` | `bash run.sh --migrate` |
+| Create administrator | `.\run.cmd --bootstrap-admin` | `bash run.sh --bootstrap-admin` |
+| Start application | `.\run.cmd` | `bash run.sh` |
+
+Remove bootstrap credentials from the environment after creating the administrator.
+On Linux you may also run `chmod +x run.sh` and then `./run.sh`.
 
 Use an HTTPS reverse proxy or configure Kestrel HTTPS directly. Production session/CSRF cookies require HTTPS; mobile browsers also require a secure origin for per-tap UUID generation. Bind an HTTP backend to loopback and have the proxy forward all paths without rewriting. Do not expose an HTTP production origin. Set `ASPNETCORE_ENVIRONMENT=Production`; Development is only for local HTTP tests.
 
