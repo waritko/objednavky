@@ -80,3 +80,12 @@ Next: React operational and administration screens, then provider/concurrency ve
 - Added a sequential tap queue with per-tap UUIDs and session-storage retry recovery. Repeated taps remain separate units. Added responsive layouts, 48px controls and keyboard focus styles without runtime CDN dependencies.
 - Verified TypeScript/production build, formatting and unit-grouping tests. Browser phone-flow verification remains for the end-to-end step. npm installation reports no vulnerabilities.
 - Pinned exact frontend dependencies and documented local development. Administration screens and integrated deployment/CI are next.
+
+## 2026-10-05 — Step 9: Administration and phone end-to-end verification
+
+- Added administrator forms for tables, categories, subcategories, items, enabled states, sorting and accounts; bulk subcategory assignment; CSV template/file upload, UTF-8/Windows-1250 decoding, preview errors and import summary.
+- Added an explicit API `--migrate` command for setup and isolated test fixtures.
+- Added Playwright phone tests backed by a temporary SQLite database and real API. Verified administrator table/CSV/account setup, staff-only navigation, repeated touch additions, reopening the order, selected delivery/payment, kitchen quantities, bulk completion, closed history and named audit entries.
+- Both 390×844 and 360×800 touch viewports passed; screenshots show no horizontal overflow and no browser runtime errors. Production build and formatting checks passed. In-app browser execution tools were unavailable, so the browser verification uses standalone Playwright.
+
+Next: SQLite/SQL Server concurrency matrix, integrated frontend/API artifact, full TeamCity checks and deployment/staff documentation.

@@ -3,6 +3,7 @@ import { api, ApiError, csrf } from "./api";
 import { money, time } from "./orderHelpers";
 import type { Account, Catalog, Order } from "./types";
 import { OrderPanel } from "./OrderPanel";
+import { Admin } from "./Admin";
 
 type Screen = "tables" | "active" | "kitchen" | "history" | "order" | "admin";
 type Tap = { tableId: string; menuItemId: string; unitId: string };
@@ -589,7 +590,7 @@ export function App() {
           </>
         )}
         {screen === "admin" && account.role === "Administrator" && (
-          <p>Správa katalogu a účtů se připravuje.</p>
+          <Admin catalog={catalog} refresh={refresh} />
         )}
       </main>
       <footer>
