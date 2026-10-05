@@ -21,3 +21,15 @@ Next: implement account bootstrap, login/logout, sessions, and role authorizatio
 - SQL Server migration/authentication verification remains pending; no SQL Server test instance was used in this step.
 
 Next: table and catalog CRUD with sorting, enabled state, and price validation (backend step 3), then CSV preview/import. React and TeamCity remain pending foundation deliverables; the full stage-1 acceptance gate is not yet complete.
+
+## 2026-10-05 — Step 3: Table and catalog administration API
+
+- Added authenticated table, category, subcategory, and menu-item lists, sorted by configured order, name, and ID. Creation and full updates require the Administrator role and the existing CSRF protection.
+- Added trimmed names/codes, length and duplicate-code validation, category/subcategory relationship checks, and server-calculated VAT-inclusive prices using decimal arithmetic and midpoint-away-from-zero rounding. Enforced common decimal scale and bounds for both database providers.
+- Added atomic bulk subcategory assignment and clearing. Prevented moving an assigned subcategory to another category. Catalog writes use serializable transactions.
+- Added enabled-state editing rather than destructive deletion, preserving records and historical references. Lists include disabled records; future ordering logic must enforce enabled state for items and their parents.
+- Documented request/response contracts, defaults, error codes, sorting, price rules, and disable behavior in `docs/catalog.md`.
+- Verified `dotnet run --project backend/RestaurantOrders.SmokeTests`: API/test projects built and authentication plus catalog HTTP checks passed against a freshly migrated temporary SQLite database. Checks cover anonymous/operational access, sorting, trimming and leading zeroes, invalid prices, VAT rounding, duplicate codes, missing parents, category mismatches, assignment atomicity, edits, and disabled-record retention. `git diff --check` passed.
+- Existing NuGet warnings NU1900 (vulnerability feed unavailable) and NU1510 (explicit Identity dependency) remain. No schema change was required. SQL Server execution remains unverified without an isolated instance.
+
+Next: backend step 4, CSV preview and transactional import using `ciselnik.csv`. React administration, the operational frontend, TeamCity, and SQL Server verification remain pending; this step completes the catalog administration API, not the full stage-2 acceptance gate.
