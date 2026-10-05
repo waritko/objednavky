@@ -148,5 +148,51 @@ test("administrator configures restaurant, then staff completes phone service fl
   );
   await order.getByRole("button", { name: "Zobrazit historii změn" }).tap();
   await expect(order.locator(".audit")).toContainText(`staff-${suffix}`);
+  await page
+    .getByRole("button", { name: "Nová objednávka", exact: true })
+    .tap();
+  // The server commits the tap, but its response is lost. Retry must reuse the unit ID.
+  await page.route("**/tables/*/units", async (route) => {
+    await route.fetch();
+    await route.abort("failed");
+  });
+  await item.tap();
+  await expect(
+    page.getByRole("button", { name: "Opakovat přidání" }),
+  ).toBeVisible();
+  await page.unroute("**/tables/*/units");
+  await page.getByRole("button", { name: "Opakovat přidání" }).tap();
+  await expect(
+    order.getByText(`1× Káva ${suffix}`, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    order.getByText("1 nevydaných · 1 nezaplacených", { exact: true }),
+  ).toBeVisible();
+  await order.getByRole("button", { name: "Zaplatit vše", exact: true }).tap();
+  await expect(
+    order.getByText("1 nevydaných · 0 nezaplacených", { exact: true }),
+  ).toBeVisible();
+  await order
+    .getByRole("button", { name: `Vybrat další Káva ${suffix}`, exact: true })
+    .tap();
+  page.removeAllListeners("dialog");
+  page.once("dialog", (dialog) => dialog.dismiss());
+  await order
+    .getByRole("button", { name: "Odebrat vybrané", exact: true })
+    .tap();
+  await expect(
+    order.getByRole("heading", { name: "Aktuální objednávka" }),
+  ).toBeVisible();
+  page.once("dialog", async (dialog) => {
+    expect(dialog.message()).toContain("Záznam platby zůstane");
+    await dialog.accept();
+  });
+  await order
+    .getByRole("button", { name: "Odebrat vybrané", exact: true })
+    .tap();
+  await expect(
+    order.getByRole("heading", { name: "Uzavřená objednávka" }),
+  ).toBeVisible();
+  await expect(order.locator(".removed")).toContainText("Odebráno");
   expect(errors).toEqual([]);
 });

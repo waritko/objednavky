@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
     "test:e2e": "playwright test",
-    "format": "prettier --write src tests *.json *.ts index.html",
-    "format:check": "prettier --check src tests *.json *.ts index.html"
+    "format": "prettier --write src tests *.json *.ts index.html ../scripts/*.mjs",
+    "format:check": "prettier --check src tests *.json *.ts index.html ../scripts/*.mjs"
   },
   "dependencies": {
     "react": "19.3.0",

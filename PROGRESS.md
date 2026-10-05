@@ -99,3 +99,18 @@ Next: SQLite/SQL Server concurrency matrix, integrated frontend/API artifact, fu
 - Full SQLite and SQL Server HTTP suites passed, including fresh migrations, snapshots, partial actions, closure and concurrency. SQL Server 16.0.4295.3 and SQLite 3.49.1 were verified; provider collation differences are explicitly covered. Added `docs/testing.md` with exact tested versions and commands.
 
 Next: final CI/package integration, operational/deployment guides, and final verification.
+
+## 2026-10-05 — Step 11: Packaging, complete CI and delivery documentation
+
+- Packaged the React production build with the ASP.NET API under `wwwroot`, added persistent configurable Data Protection storage and disabled caching for API responses.
+- Expanded the Linux TeamCity configuration and shared CI script to restore, check C#/frontend formatting and types, build, run the SQLite/SQL Server concurrency matrix and frontend tests, package the app, and run both phone workflows against that actual package. Artifacts include the app, JUnit XML, screenshots and failure traces.
+- Added local quick start, production/provider/migration/backup guidance, exact version records and a Czech staff guide. Updated existing backend, frontend, authentication and TeamCity documentation.
+- Removed the redundant Identity package. A successful fresh vulnerability lookup identified the old native SQLite dependency; upgraded it to SQLite 3.53.3. NuGet restore and Release builds now finish with zero warnings. No schema change was required.
+- Full `scripts/ci.sh` passed via Git Bash: restore, C# formatting, Prettier, TypeScript, Release builds, both provider suites, frontend unit tests, combined package and both browser viewports. Browser checks also prove retry after a server-committed/lost response creates no duplicate, cancelling paid removal has no effect, and confirmed paid removal retains the visible unit history.
+- Independently verified restore, C# formatting and the complete SQLite HTTP/concurrency suite on native Linux in the .NET SDK 10.0.201 container. Final frontend build and both packaged phone tests passed after the final Czech-error/login refinements.
+
+## Delivery status
+
+All five planned implementation stages are complete in the repository: foundation; catalog/import; ordering; service/payment; history/audit/concurrency and documentation. Both database providers migrate and pass the application suite; both phone acceptance flows pass. Six implementation commits in this run record the completed steps, each pushed to `origin/master`.
+
+External verification remains: import the Kotlin DSL into the actual TeamCity 2026.1 server and run on its configured Linux agent; configure and verify production HTTPS, secrets, backups and deployment. No TeamCity server or production deployment was connected in this session. These deployment-specific checks are documented rather than represented as executed.

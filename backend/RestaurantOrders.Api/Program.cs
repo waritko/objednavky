@@ -9,6 +9,7 @@ using RestaurantOrders.Api.Catalog;
 using RestaurantOrders.Api.Orders;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 var provider = builder.Configuration["Database:Provider"] ?? "Sqlite";
@@ -30,6 +31,9 @@ switch (provider.ToLowerInvariant())
 }
 
 builder.Services.AddProblemDetails();
+var protection = builder.Services.AddDataProtection().SetApplicationName("RestaurantOrders");
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+    protection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<CsvImportService>();
@@ -80,6 +84,13 @@ if (args.Contains("--bootstrap-admin"))
     await AuthEndpoints.BootstrapAdministratorAsync(app);
     return;
 }
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.CacheControl = "no-store";
+    await next(context);
+});
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();

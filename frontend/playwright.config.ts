@@ -5,7 +5,9 @@ export default defineConfig({
   workers: 1,
   timeout: 60000,
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: process.env.E2E_PUBLISHED
+      ? "http://127.0.0.1:5080"
+      : "http://127.0.0.1:5173",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
@@ -37,10 +39,14 @@ export default defineConfig({
       url: "http://127.0.0.1:5080/health",
       timeout: 60000,
     },
-    {
-      command: "npm run dev -- --port 5173 --strictPort",
-      url: "http://127.0.0.1:5173",
-      timeout: 30000,
-    },
+    ...(!process.env.E2E_PUBLISHED
+      ? [
+          {
+            command: "npm run dev -- --port 5173 --strictPort",
+            url: "http://127.0.0.1:5173",
+            timeout: 30000,
+          },
+        ]
+      : []),
   ],
 });

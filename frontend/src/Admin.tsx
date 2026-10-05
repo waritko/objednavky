@@ -213,9 +213,16 @@ export function Admin({
                 if (!file) throw new Error("Vyberte soubor CSV.");
                 if (file.size > 2_000_000)
                   throw new Error("Soubor je příliš velký (nejvýše 2 MB).");
-                const csv = new TextDecoder(encoding, { fatal: true }).decode(
-                  await file.arrayBuffer(),
-                );
+                let csv: string;
+                try {
+                  csv = new TextDecoder(encoding, { fatal: true }).decode(
+                    await file.arrayBuffer(),
+                  );
+                } catch {
+                  throw new Error(
+                    "Soubor nelze přečíst ve zvoleném kódování. Vyberte jiné kódování nebo opravte soubor.",
+                  );
+                }
                 setPreview(
                   await api<Preview>("/catalog/import/preview", { csv }),
                 );

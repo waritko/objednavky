@@ -6,7 +6,9 @@ import path from "node:path";
 const directory = mkdtempSync(path.join(tmpdir(), "restaurant-e2e-"));
 const configuration = process.env.BUILD_CONFIGURATION || "Debug";
 const api = path.resolve(
-  `../backend/RestaurantOrders.Api/bin/${configuration}/net10.0/RestaurantOrders.Api.dll`,
+  process.env.E2E_PUBLISHED
+    ? "../artifacts/api/RestaurantOrders.Api.dll"
+    : `../backend/RestaurantOrders.Api/bin/${configuration}/net10.0/RestaurantOrders.Api.dll`,
 );
 const env = {
   ...process.env,
@@ -17,6 +19,7 @@ const env = {
   Bootstrap__Username: "admin",
   Bootstrap__Password: "Browser-test-password-123",
   Logging__LogLevel__Default: "Warning",
+  DataProtection__KeysPath: path.join(directory, "keys"),
 };
 for (const command of ["--migrate", "--bootstrap-admin"]) {
   const result = spawnSync("dotnet", [api, command], { env, stdio: "inherit" });
@@ -25,7 +28,11 @@ for (const command of ["--migrate", "--bootstrap-admin"]) {
     process.exit(result.status || 1);
   }
 }
-const server = spawn("dotnet", [api], { env, stdio: "inherit" });
+const server = spawn("dotnet", [api], {
+  env,
+  stdio: "inherit",
+  cwd: path.dirname(api),
+});
 const stop = () => server.kill();
 process.on("SIGTERM", stop);
 process.on("SIGINT", stop);

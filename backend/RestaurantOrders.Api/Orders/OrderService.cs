@@ -16,12 +16,22 @@ public sealed class OrderService(RestaurantDbContext db)
     public static object View(RestaurantOrder order)
     {
         var current = order.Units.Where(x => x.RemovedAt is null).ToArray();
-        return new { order.Id, order.TableId, order.OpenedAt, order.ClosedAt, state = order.State.ToString(),
-            order.CreatedByAccountId, order.ConcurrencyToken, total = current.Sum(x => x.UnitPrice),
+        return new
+        {
+            order.Id,
+            order.TableId,
+            order.OpenedAt,
+            order.ClosedAt,
+            state = order.State.ToString(),
+            order.CreatedByAccountId,
+            order.ConcurrencyToken,
+            total = current.Sum(x => x.UnitPrice),
             paid = current.Where(x => x.PaidAt is not null).Sum(x => x.UnitPrice),
             unpaid = current.Where(x => x.PaidAt is null).Sum(x => x.UnitPrice),
             undeliveredCount = current.Count(x => x.ProcessedAt is null),
-            unpaidCount = current.Count(x => x.PaidAt is null), units = order.Units.OrderBy(x => x.AddedAt).ThenBy(x => x.Id) };
+            unpaidCount = current.Count(x => x.PaidAt is null),
+            units = order.Units.OrderBy(x => x.AddedAt).ThenBy(x => x.Id)
+        };
     }
 
     private static IResult Error(string code, string message, int status = 400) => Results.Json(new { code, message }, statusCode: status);
@@ -69,8 +79,18 @@ public sealed class OrderService(RestaurantDbContext db)
             order = new RestaurantOrder { TableId = tableId, ActiveTableId = tableId, CreatedByAccountId = actor, OpenedAt = now };
             db.Orders.Add(order);
         }
-        var unit = new OrderUnit { Id = input.UnitId, OrderId = order.Id, MenuItemId = item.Id, ItemName = item.Name,
-            CategoryName = category.Name, SubcategoryName = subcategory?.Name, UnitPrice = item.Price, AddedAt = now, AddedByAccountId = actor };
+        var unit = new OrderUnit
+        {
+            Id = input.UnitId,
+            OrderId = order.Id,
+            MenuItemId = item.Id,
+            ItemName = item.Name,
+            CategoryName = category.Name,
+            SubcategoryName = subcategory?.Name,
+            UnitPrice = item.Price,
+            AddedAt = now,
+            AddedByAccountId = actor
+        };
         order.Units.Add(unit);
         // Explicitly mark a client-assigned key as new on existing orders.
         db.OrderUnits.Add(unit);
@@ -123,6 +143,13 @@ public sealed class OrderService(RestaurantDbContext db)
     }, ct);
 
     private void Audit(RestaurantOrder order, OrderUnit? unit, Guid actor, DateTimeOffset now, string action, object details) =>
-        db.AuditEvents.Add(new AuditEvent { OrderId = order.Id, UnitId = unit?.Id, ActorAccountId = actor,
-            OccurredAt = now, Action = action, DetailsJson = JsonSerializer.Serialize(details) });
+        db.AuditEvents.Add(new AuditEvent
+        {
+            OrderId = order.Id,
+            UnitId = unit?.Id,
+            ActorAccountId = actor,
+            OccurredAt = now,
+            Action = action,
+            DetailsJson = JsonSerializer.Serialize(details)
+        });
 }

@@ -33,9 +33,9 @@ public static class OrderEndpoints
         {
             if (!await db.Orders.AnyAsync(x => x.Id == id, ct)) return Results.NotFound();
             var events = await (from entry in db.AuditEvents.AsNoTracking()
-                join actor in db.Accounts on entry.ActorAccountId equals actor.Id
-                where entry.OrderId == id
-                select new { entry.Id, entry.UnitId, entry.Action, entry.ActorAccountId, actor.Username, entry.OccurredAt, entry.DetailsJson }).ToListAsync(ct);
+                                join actor in db.Accounts on entry.ActorAccountId equals actor.Id
+                                where entry.OrderId == id
+                                select new { entry.Id, entry.UnitId, entry.Action, entry.ActorAccountId, actor.Username, entry.OccurredAt, entry.DetailsJson }).ToListAsync(ct);
             return Results.Ok(events.OrderBy(x => x.OccurredAt).ThenBy(x => x.Id));
         });
         orders.MapGet("/{id:guid}", async (Guid id, RestaurantDbContext db, CancellationToken ct) =>

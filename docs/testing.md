@@ -19,4 +19,19 @@ SQLite permits case-distinct catalog codes; SQL Server's default case-insensitiv
 
 Browser tests need `npm --prefix frontend ci` and `npx playwright install chromium` from `frontend/`, plus a built API. They own local ports 5080 and 5173, create a temporary database, bootstrap test-only accounts and shut down their servers. Tests use 390×844 and 360×800 touch viewports; traces/screenshots remain under `frontend/test-results` on failure and successful phone screenshots/JUnit results under `artifacts/`.
 
-Verified versions: .NET SDK 10.0.201; local ASP.NET/.NET runtime 10.0.12; EF Core 10.0.5; SQLite 3.49.1; SQL Server 2022 16.0.4295.3 (Linux container); Node 25.9.0; npm 11.12.1; Chromium 153.0.8010.12 / Playwright 1.63.0. Frontend package versions are exact in the lockfile.
+Verified versions: .NET SDK 10.0.201; local ASP.NET/.NET runtime 10.0.12; EF Core 10.0.5; SQLite 3.53.3; SQL Server 2022 16.0.4295.3 (Linux container); Node 25.9.0; npm 11.12.1; Chromium 153.0.8010.12 / Playwright 1.63.0. Frontend package versions are exact in the lockfile.
+
+The native SQLite dependency is explicitly pinned to 3.53.3 because the previous
+2.1.11 package bundled vulnerable SQLite 3.49.1. See the
+[SQLite dependency advisory](https://github.com/advisories/GHSA-2m69-gcr7-jv3q).
+Restore and Release builds now complete without NuGet warnings.
+
+The backend restore, C# formatting check and full SQLite HTTP/concurrency suite
+also passed inside the native Linux `.NET SDK 10.0.201` container, using a read-only
+source mount and a separate temporary build directory.
+
+The complete `bash scripts/ci.sh` sequence also runs the browser tests against the
+published API with its production-built frontend, not only Vite. These include a
+server-committed tap whose response is lost, safe retry, cancelled paid removal,
+confirmed paid removal, and read-only history. Test servers use Development cookies
+on loopback HTTP; production HTTPS/reverse-proxy configuration is deployment-specific.
