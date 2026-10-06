@@ -442,7 +442,13 @@ export function App() {
                       return (
                         group.length > 0 && (
                           <section key={sub?.id || "direct"}>
-                            <h3>{sub?.name || currentCategory?.name}</h3>
+                            <h3
+                              className={
+                                sub ? undefined : "direct-category-heading"
+                              }
+                            >
+                              {sub?.name || currentCategory?.name}
+                            </h3>
                             <div className="menu-grid">
                               {group.map((item) => (
                                 <button

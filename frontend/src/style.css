@@ -388,6 +388,25 @@ footer {
     max-height: 43vh;
     overflow-y: auto;
   }
+  .ordering-layout .tabs {
+    gap: 4px;
+    margin: 8px 0;
+  }
+  .ordering-layout .tabs button {
+    min-height: 40px;
+    max-width: 100%;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .ordering-layout h3 {
+    margin: 12px 0 6px;
+    font-size: 14px;
+  }
+  .ordering-layout .direct-category-heading {
+    display: none;
+  }
   .order-panel {
     position: static;
     max-height: none;
