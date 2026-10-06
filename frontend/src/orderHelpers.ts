@@ -8,14 +8,7 @@ export const time = (value: string | null) =>
 export function groupUnits(units: Unit[]) {
   const groups = new Map<string, Unit[]>();
   for (const unit of units) {
-    const key = JSON.stringify([
-      unit.menuItemId,
-      unit.itemName,
-      unit.unitPrice,
-      !!unit.paidAt,
-      !!unit.processedAt,
-      !!unit.removedAt,
-    ]);
+    const key = unit.menuItemId;
     groups.set(key, [...(groups.get(key) || []), unit]);
   }
   return [...groups.values()];

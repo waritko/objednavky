@@ -53,6 +53,7 @@ public abstract class RestaurantDbContext(DbContextOptions options) : DbContext(
             e.HasOne<Account>().WithMany().HasForeignKey(x => x.CreatedByAccountId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.State).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.ConcurrencyToken).IsConcurrencyToken();
+            e.Property(x => x.Note).HasMaxLength(1000);
             e.HasMany(x => x.Units).WithOne().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         });
         model.Entity<OrderUnit>(e =>

@@ -185,6 +185,24 @@ export function App() {
       await refresh();
     });
   }
+  async function saveNote(note: string, menuItemId?: string) {
+    if (!order) return false;
+    let saved = false;
+    await run(async () => {
+      try {
+        setOrder(await api<Order>(`/orders/${order.id}/note`, {
+          concurrencyToken: order.concurrencyToken, note, menuItemId,
+        }));
+        saved = true;
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 409)
+          setOrder(await api<Order>(`/orders/${order.id}`));
+        throw error;
+      }
+      await refresh();
+    });
+    return saved;
+  }
   if (starting)
     return (
       <main>
@@ -483,7 +501,7 @@ export function App() {
               </section>
               <OrderDisclosure key={tableId} order={order}>
                 {order ? (
-                  <OrderPanel order={order} busy={locked} change={change} />
+                  <OrderPanel order={order} busy={locked} change={change} saveNote={saveNote} />
                 ) : (
                   <section className="order-panel">
                     <h2>Aktuální objednávka</h2>
@@ -534,6 +552,7 @@ export function App() {
                     <span>{money(entry.unpaid)} nezaplaceno</span>
                   </div>
                   <p className="muted">{time(entry.openedAt)}</p>
+                  {entry.note && <p className="saved-note">{entry.note}</p>}
                   {screen === "kitchen" && (
                     <ul>
                       {Object.values(
@@ -544,7 +563,7 @@ export function App() {
                           .reduce<
                             Record<
                               string,
-                              { name: string; count: number; addedAt: string }
+                              { name: string; count: number; addedAt: string; note?: string }
                             >
                           >((groups, unit) => {
                             const key = JSON.stringify([
@@ -555,6 +574,7 @@ export function App() {
                               name: unit.itemName,
                               count: 0,
                               addedAt: unit.addedAt,
+                              note: entry.lineNotes[unit.menuItemId],
                             };
                             groups[key].count++;
                             return groups;
@@ -566,6 +586,7 @@ export function App() {
                           </strong>
                           <br />
                           <small>{time(group.addedAt)}</small>
+                          {group.note && <p className="saved-note">{group.note}</p>}
                         </li>
                       ))}
                     </ul>

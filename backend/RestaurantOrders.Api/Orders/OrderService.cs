@@ -9,6 +9,7 @@ using RestaurantOrders.Api.Persistence;
 namespace RestaurantOrders.Api.Orders;
 
 public sealed record AddUnitInput(Guid MenuItemId, Guid UnitId);
+public sealed record ChangeNoteInput(Guid ConcurrencyToken, string? Note, Guid? MenuItemId = null);
 public sealed record ChangeUnitsInput(Guid ConcurrencyToken, Guid[]? UnitIds, bool All = false, bool ConfirmPaidRemoval = false);
 
 public sealed class OrderService(RestaurantDbContext db)
@@ -25,6 +26,8 @@ public sealed class OrderService(RestaurantDbContext db)
             state = order.State.ToString(),
             order.CreatedByAccountId,
             order.ConcurrencyToken,
+            order.Note,
+            lineNotes = JsonSerializer.Deserialize<Dictionary<Guid, string>>(order.LineNotesJson),
             total = current.Sum(x => x.UnitPrice),
             paid = current.Where(x => x.PaidAt is not null).Sum(x => x.UnitPrice),
             unpaid = current.Where(x => x.PaidAt is null).Sum(x => x.UnitPrice),
@@ -139,6 +142,38 @@ public sealed class OrderService(RestaurantDbContext db)
                 Audit(order, null, actor, now, "Closed", new { });
             }
         }
+        return Results.Ok(View(order));
+    }, ct);
+
+    public Task<IResult> ChangeNote(Guid id, ChangeNoteInput input, Guid actor, CancellationToken ct) => Write(async () =>
+    {
+        var order = await db.Orders.Include(x => x.Units).SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (order is null) return Results.NotFound();
+        if (order.State == OrderState.Closed) return Error("order_closed", "Uzavřenou objednávku nelze změnit.", 409);
+        if (order.ConcurrencyToken != input.ConcurrencyToken) return Conflict();
+        var note = input.Note?.Trim();
+        if (note?.Length > 1000) return Error("invalid_note", "Poznámka může mít nejvýše 1000 znaků.");
+        if (string.IsNullOrEmpty(note)) note = null;
+        var notes = JsonSerializer.Deserialize<Dictionary<Guid, string>>(order.LineNotesJson)!;
+        string? before;
+        if (input.MenuItemId is Guid itemId)
+        {
+            if (!order.Units.Any(x => x.MenuItemId == itemId && x.RemovedAt is null))
+                return Error("invalid_line", "Položka nepatří do aktivních řádků objednávky.");
+            before = notes.GetValueOrDefault(itemId);
+            if (before == note) return Results.Ok(View(order));
+            if (note is null) notes.Remove(itemId);
+            else notes[itemId] = note;
+            order.LineNotesJson = JsonSerializer.Serialize(notes);
+        }
+        else
+        {
+            before = order.Note;
+            if (before == note) return Results.Ok(View(order));
+            order.Note = note;
+        }
+        order.ConcurrencyToken = Guid.NewGuid();
+        Audit(order, null, actor, DateTimeOffset.UtcNow, "NoteChanged", new { input.MenuItemId, before, after = note });
         return Results.Ok(View(order));
     }, ct);
 

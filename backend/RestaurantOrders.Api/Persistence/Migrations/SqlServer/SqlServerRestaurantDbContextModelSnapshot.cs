@@ -255,6 +255,14 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
                     b.Property<Guid>("CreatedByAccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("LineNotesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<DateTimeOffset>("OpenedAt")
                         .HasColumnType("datetimeoffset");
 

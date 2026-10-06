@@ -40,6 +40,8 @@ export interface Unit {
   removedByAccountId: string | null;
 }
 export interface Order {
+  note: string | null;
+  lineNotes: Record<string, string>;
   id: string;
   tableId: string;
   state: "Active" | "Closed";

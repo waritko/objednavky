@@ -38,6 +38,7 @@ button:disabled {
   cursor: default;
 }
 button:focus-visible,
+textarea:focus-visible,
 input:focus-visible,
 select:focus-visible,
 summary:focus-visible,
@@ -254,6 +255,40 @@ small {
 .cancel-line,
 .mobile-unit-summary {
   display: none;
+}
+.note-editor {
+  margin: 4px 0;
+}
+.note-toggle {
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.saved-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #73501d;
+  border-left: 2px solid #d88727;
+  padding-left: 8px;
+  font-size: 14px;
+}
+.note-editor form {
+  gap: 8px;
+}
+.note-editor textarea {
+  width: 100%;
+  resize: vertical;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .removed {
   background: #f5f2ef;

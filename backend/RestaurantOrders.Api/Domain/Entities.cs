@@ -62,6 +62,8 @@ public sealed class RestaurantOrder
     public DateTimeOffset? ClosedAt { get; set; }
     public OrderState State { get; set; } = OrderState.Active;
     public Guid ConcurrencyToken { get; set; } = Guid.NewGuid();
+    public string? Note { get; set; }
+    public string LineNotesJson { get; set; } = "{}";
     public List<OrderUnit> Units { get; set; } = [];
 }
 

@@ -50,6 +50,8 @@ public static class OrderEndpoints
         }).RequireAuthorization();
         app.MapPost("/tables/{id:guid}/units", (Guid id, AddUnitInput input, OrderService service, ClaimsPrincipal user, CancellationToken ct) =>
             service.Add(id, input, Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!), ct)).RequireAuthorization();
+        orders.MapPost("/{id:guid}/note", (Guid id, ChangeNoteInput input, OrderService service, ClaimsPrincipal user, CancellationToken ct) =>
+            service.ChangeNote(id, input, Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!), ct));
         orders.MapPost("/{id:guid}/{action}", (Guid id, string action, ChangeUnitsInput input, OrderService service, ClaimsPrincipal user, CancellationToken ct) =>
             service.Change(id, action, input, Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!), ct));
     }

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { groupUnits } from "../src/orderHelpers.ts";
 
-test("quantity selection separates payment, delivery, removal and price snapshots", () => {
+test("one line per item retains all payment, delivery, removal and price snapshots", () => {
   const base = {
     menuItemId: "coffee",
     itemName: "Káva",
@@ -19,12 +19,13 @@ test("quantity selection separates payment, delivery, removal and price snapshot
     { ...base, id: "5", removedAt: "2026-10-05" },
     { ...base, id: "6", unitPrice: 50 },
     { ...base, id: "7", itemName: "Nová káva" },
+    { ...base, id: "8", menuItemId: "tea" },
   ];
   const groups = groupUnits(units);
-  assert.equal(groups.length, 6);
+  assert.equal(groups.length, 2);
   assert.deepEqual(
     groups[0].map((unit) => unit.id),
-    ["1", "2"],
+    ["1", "2", "3", "4", "5", "6", "7"],
   );
   assert.equal(groups.flat().length, units.length);
 });

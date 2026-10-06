@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { api } from "./api";
 import { groupUnits, money, time } from "./orderHelpers";
 import type { Audit, Order, Unit } from "./types";
+import { NoteEditor } from "./NoteEditor";
 
 export function OrderPanel({
   order,
   busy,
   change,
+  saveNote,
 }: {
   order: Order;
   busy: boolean;
+  saveNote: (note: string, menuItemId?: string) => Promise<boolean>;
   change: (
     action: string,
     ids: string[] | null,
@@ -95,47 +98,51 @@ export function OrderPanel({
       <p>
         {order.undeliveredCount} nevydaných · {order.unpaidCount} nezaplacených
       </p>
+      <NoteEditor key={order.id} note={order.note} label="Poznámka k objednávce" readOnly={closed} busy={busy} save={(note) => saveNote(note)} />
       <div className="unit-list">
         {groupUnits(order.units).map((group) => {
           const unit = group[0];
-          const count = group.filter((unit) =>
+          const active = group.filter((unit) => !unit.removedAt);
+          const removed = active.length === 0;
+          const count = active.filter((unit) =>
             selected.includes(unit.id),
           ).length;
           const choose = (quantity: number) =>
             setSelected((previous) => [
               ...previous.filter((id) => !group.some((unit) => unit.id === id)),
-              ...group.slice(0, quantity).map((unit) => unit.id),
+              ...active.slice(0, quantity).map((unit) => unit.id),
             ]);
           return (
             <article
               key={unit.id}
-              className={`unit ${unit.removedAt ? "removed" : ""}`}
+              className={`unit ${removed ? "removed" : ""}`}
             >
               <div className="section-heading unit-heading">
                 <strong>
-                  {group.length}× {unit.itemName}
+                  {removed ? group.length : active.length}× {unit.itemName}
                 </strong>
                 <span className="unit-price">
-                  {money(unit.unitPrice * group.length)}
+                  {money(active.reduce((sum, unit) => sum + unit.unitPrice, 0))}
                 </span>
-                {!closed && !unit.removedAt && (
+                {!closed && !removed && (
                   <button
                     className="danger cancel-line"
                     disabled={busy}
                     aria-label={`Odebrat řádek ${group.length}× ${unit.itemName}`}
-                    onClick={() => void cancelLine(group)}
+                    onClick={() => void cancelLine(active)}
                   >
                     ×
                   </button>
                 )}
               </div>
               <p className="muted">
-                {unit.removedAt
+                {removed
                   ? "Odebráno"
-                  : `${unit.processedAt ? "Vydáno" : "Nevydáno"} · ${unit.paidAt ? "Zaplaceno" : "Nezaplaceno"}`}{" "}
+                  : `${active.filter((unit) => !!unit.processedAt).length}/${active.length} vydáno · ${active.filter((unit) => !!unit.paidAt).length}/${active.length} zaplaceno`}{" "}
                 <span className="unit-added-time"> · {time(unit.addedAt)}</span>
               </p>
-              {!closed && !unit.removedAt && (
+              <NoteEditor key={`${order.id}:${unit.menuItemId}`} note={order.lineNotes[unit.menuItemId] || null} label={`Poznámka k položce ${unit.itemName}`} readOnly={closed || removed} busy={busy} save={(note) => saveNote(note, unit.menuItemId)} />
+              {!closed && !removed && (
                 <div className="quantity" aria-label={`Výběr ${unit.itemName}`}>
                   <button
                     disabled={busy || count === 0}
@@ -145,10 +152,10 @@ export function OrderPanel({
                     −
                   </button>
                   <span>
-                    Vybráno {count} / {group.length}
+                    Vybráno {count} / {active.length}
                   </span>
                   <button
-                    disabled={busy || count === group.length}
+                    disabled={busy || count === active.length}
                     onClick={() => choose(count + 1)}
                     aria-label={`Vybrat další ${unit.itemName}`}
                   >
@@ -188,6 +195,8 @@ export function OrderPanel({
                     )}
                     <small>
                       Přidáno {time(unit.addedAt)}
+                      <br />
+                      {unit.itemName} · {money(unit.unitPrice)}
                       <br />
                       Vydáno {time(unit.processedAt)}
                       <br />
@@ -270,6 +279,7 @@ export function OrderPanel({
                   processed: "Vydáno",
                   removed: "Odebráno",
                   Closed: "Uzavřeno",
+                  NoteChanged: "Poznámka změněna",
                 } as Record<string, string>
               )[entry.action] || entry.action}{" "}
               · {entry.username} · {time(entry.occurredAt)}
