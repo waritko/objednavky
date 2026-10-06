@@ -264,53 +264,61 @@ export function App() {
             (!undelivered || order.undeliveredCount > 0) &&
             (!unpaid || order.unpaidCount > 0),
         );
+  const chromeClass =
+    account.role === "Operational" ? "operational-chrome" : undefined;
+  const logoutButton = (
+    <button
+      disabled={locked}
+      onClick={() =>
+        void run(async () => {
+          await api("/auth/logout", {});
+          setAccount(null);
+          setOrder(null);
+          setCatalog(emptyCatalog);
+        })
+      }
+    >
+      Odhlásit
+    </button>
+  );
+  const navigation = (
+    <nav aria-label="Hlavní navigace">
+      {(
+        [
+          ["tables", "Stoly"],
+          ["active", "Objednávky"],
+          ["kitchen", "Kuchyně"],
+          ["history", "Historie"],
+          ...(account.role === "Administrator" ? [["admin", "Správa"]] : []),
+        ] as [Screen, string][]
+      ).map(([key, label]) => (
+        <button
+          key={key}
+          aria-current={screen === key ? "page" : undefined}
+          disabled={locked}
+          onClick={() => {
+            setScreen(key);
+            setError("");
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </nav>
+  );
   return (
     <>
-      <header>
+      <header className={chromeClass}>
         <div>
           <span className="eyebrow">RESTAURACE</span>
           <strong>Objednávky</strong>
         </div>
         <div className="account">
           <span>{account.username}</span>
-          <button
-            disabled={locked}
-            onClick={() =>
-              void run(async () => {
-                await api("/auth/logout", {});
-                setAccount(null);
-                setOrder(null);
-                setCatalog(emptyCatalog);
-              })
-            }
-          >
-            Odhlásit
-          </button>
+          {logoutButton}
         </div>
       </header>
-      <nav aria-label="Hlavní navigace">
-        {(
-          [
-            ["tables", "Stoly"],
-            ["active", "Objednávky"],
-            ["kitchen", "Kuchyně"],
-            ["history", "Historie"],
-            ...(account.role === "Administrator" ? [["admin", "Správa"]] : []),
-          ] as [Screen, string][]
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            aria-current={screen === key ? "page" : undefined}
-            disabled={locked}
-            onClick={() => {
-              setScreen(key);
-              setError("");
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
+      <div className={chromeClass}>{navigation}</div>
       <main>
         {error && (
           <div role="alert" className="error">
@@ -594,6 +602,16 @@ export function App() {
         )}
       </main>
       <footer>
+        {account.role === "Operational" && (
+          <details className="mobile-menu">
+            <summary>Menu</summary>
+            {navigation}
+            <div className="account">
+              <span>{account.username}</span>
+              {logoutButton}
+            </div>
+          </details>
+        )}
         Objednávky · {account.role === "Administrator" ? "Správce" : "Obsluha"}
         {pending > 0 ? ` · Odesílání ${pending} ks…` : " · Připojeno"}
       </footer>

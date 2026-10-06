@@ -53,15 +53,29 @@ internal static class ImportChecks
         items = await admin.GetFromJsonAsync<JsonElement>("/catalog/items");
         item = items.EnumerateArray().Single(x => x.GetProperty("id").GetGuid() == id);
         Assert(item.GetProperty("subcategoryId").ValueKind == JsonValueKind.Null && item.GetProperty("price").GetDecimal() == 24.20m && item.GetProperty("name").GetString() == "Updated", "reimport updates same item and clears stale subcategory");
+        var existingCategory = await Expect(await admin.PostAsJsonAsync("/catalog/categories", new { code = "Žluť", name = "Existing Unicode category", sortOrder = 42, enabled = false }));
+        var unicodeCsv = CsvImportService.Header + "\nž-test-1,First,Žluť,1,12\nž-test-2,Second,žLUŤ,2,12\nž-test-3,Third,Kódy,3,12\nž-test-4,Fourth,Kódy,4,12\nž-test-5,Fifth,KÓDY,5,12";
+        preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv = unicodeCsv }));
+        result = await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }));
+        Assert(result.GetProperty("created").GetInt32() == 5 && result.GetProperty("categoriesCreated").GetInt32() == 1, "Unicode category codes reuse existing categories and merge repeated/case-variant rows");
+        items = await admin.GetFromJsonAsync<JsonElement>("/catalog/items");
+        var unicodeItemId = items.EnumerateArray().Single(x => x.GetProperty("code").GetString() == "ž-test-1").GetProperty("id").GetGuid();
+        var unicodeCategory = (await admin.GetFromJsonAsync<JsonElement>("/catalog/categories")).EnumerateArray().Single(x => x.GetProperty("id").GetGuid() == existingCategory.GetProperty("id").GetGuid());
+        Assert(unicodeCategory.GetProperty("name").GetString() == "Existing Unicode category" && unicodeCategory.GetProperty("sortOrder").GetInt32() == 42 && !unicodeCategory.GetProperty("enabled").GetBoolean(), "import preserves existing Unicode category metadata");
+        preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv = unicodeCsv.ToUpperInvariant() }));
+        result = await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }));
+        items = await admin.GetFromJsonAsync<JsonElement>("/catalog/items");
+        Assert(result.GetProperty("created").GetInt32() == 0 && result.GetProperty("updated").GetInt32() == 5 && result.GetProperty("categoriesCreated").GetInt32() == 0 &&
+            items.EnumerateArray().Single(x => x.GetProperty("id").GetGuid() == unicodeItemId).GetProperty("name").GetString() == "FIRST", "Unicode item and category case variants reimport without duplicates");
         preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv }));
         result = await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }));
         Assert(result.GetProperty("created").GetInt32() == 201, "full sample import");
         Assert(result.GetProperty("categoriesCreated").GetInt32() == 11, "sample category case variants merge consistently");
         result = await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }));
         Assert(result.GetProperty("created").GetInt32() == 0 && result.GetProperty("updated").GetInt32() == 201, "repeat sample import updates without duplicates");
-        // Deliberately ambiguous SQLite catalog codes force a late failure after an earlier insert.
-        await Expect(await admin.PostAsJsonAsync("/catalog/categories", new { code = "ambiguous", name = "One" }));
-        var ambiguous = await admin.PostAsJsonAsync("/catalog/categories", new { code = "AMBIGUOUS", name = "Two" });
+        // Deliberately ambiguous Unicode codes force a late failure after an earlier insert.
+        await Expect(await admin.PostAsJsonAsync("/catalog/categories", new { code = "ž-ambiguous", name = "One" }));
+        var ambiguous = await admin.PostAsJsonAsync("/catalog/categories", new { code = "Ž-AMBIGUOUS", name = "Two" });
         if ((int)ambiguous.StatusCode == 409)
         {
             Assert(true, "case-insensitive provider prevents ambiguous catalog codes");
@@ -69,9 +83,18 @@ internal static class ImportChecks
         }
         await Expect(ambiguous);
         before = (await admin.GetFromJsonAsync<JsonElement>("/catalog/items")).GetArrayLength();
-        preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv = CsvImportService.Header + "\nrollback-first,First,rollback-category,1,12\nrollback-second,Second,ambiguous,1,12" }));
+        preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv = CsvImportService.Header + "\nrollback-first,First,rollback-category,1,12\nrollback-second,Second,ž-ambiguous,1,12" }));
         await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }), 409);
         Assert((await admin.GetFromJsonAsync<JsonElement>("/catalog/items")).GetArrayLength() == before &&
             !(await admin.GetFromJsonAsync<JsonElement>("/catalog/categories")).EnumerateArray().Any(x => x.GetProperty("code").GetString() == "rollback-category"), "late import conflict rolls back items and categories");
+        var ambiguousItem = new { code = "ř-ambiguous", categoryId, name = "One", priceBeforeVat = 1, vatRate = 12 };
+        await Expect(await admin.PostAsJsonAsync("/catalog/items", ambiguousItem));
+        await Expect(await admin.PostAsJsonAsync("/catalog/items", new { code = "Ř-AMBIGUOUS", categoryId, name = "Two", priceBeforeVat = 1, vatRate = 12 }));
+        before = (await admin.GetFromJsonAsync<JsonElement>("/catalog/items")).GetArrayLength();
+        preview = await Expect(await admin.PostAsJsonAsync("/catalog/import/preview", new { csv = CsvImportService.Header + "\nrollback-item-first,First,rollback-item-category,1,12\nŘ-ambiguous,Second,Žluť,1,12" }));
+        var conflict = await Expect(await admin.PostAsJsonAsync("/catalog/import/commit", new { token = preview.GetProperty("token").GetString() }), 409);
+        Assert(conflict.GetProperty("code").GetString() == "ambiguous_import_code" &&
+            (await admin.GetFromJsonAsync<JsonElement>("/catalog/items")).GetArrayLength() == before &&
+            !(await admin.GetFromJsonAsync<JsonElement>("/catalog/categories")).EnumerateArray().Any(x => x.GetProperty("code").GetString() == "rollback-item-category"), "ambiguous Unicode item codes reject import and roll back earlier writes");
     }
 }

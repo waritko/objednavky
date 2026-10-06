@@ -89,28 +89,35 @@ public sealed class CsvImportService(RestaurantDbContext db, IDataProtectionProv
         var categoriesCreated = 0;
         try
         {
+            // Compare Unicode codes in .NET on both providers: SQLite's upper()
+            // only changes ASCII letters and cannot match codes such as Káva.
+            var categoriesByCode = (await db.Categories.ToListAsync(ct))
+                .GroupBy(x => x.Code, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
+            var itemsByCode = (await db.MenuItems.ToListAsync(ct))
+                .GroupBy(x => x.Code, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
             foreach (var row in ticket.Rows)
             {
-                // The source uses both k/K and z/Z for the same category.
-                var categoryCode = row.CategoryCode.ToUpperInvariant();
-                var categories = await db.Categories.Where(x => x.Code.ToUpper() == categoryCode).Take(2).ToListAsync(ct);
-                if (categories.Count > 1) return Error("ambiguous_import_code", "Katalog obsahuje kódy lišící se pouze velikostí písmen. Nejprve je sjednoťte.", 409);
-                var category = categories.SingleOrDefault();
+                categoriesByCode.TryGetValue(row.CategoryCode, out var categories);
+                if (categories?.Count > 1) return Error("ambiguous_import_code", "Katalog obsahuje kódy lišící se pouze velikostí písmen. Nejprve je sjednoťte.", 409);
+                var category = categories?.SingleOrDefault();
                 if (category is null)
                 {
                     category = new Category { Code = row.CategoryCode, Name = row.CategoryCode };
                     db.Categories.Add(category);
                     await db.SaveChangesAsync(ct);
+                    categoriesByCode.Add(row.CategoryCode, [category]);
                     categoriesCreated++;
                 }
-                var itemCode = row.Code.ToUpperInvariant();
-                var items = await db.MenuItems.Where(x => x.Code.ToUpper() == itemCode).Take(2).ToListAsync(ct);
-                if (items.Count > 1) return Error("ambiguous_import_code", "Katalog obsahuje kódy lišící se pouze velikostí písmen. Nejprve je sjednoťte.", 409);
-                var item = items.SingleOrDefault();
+                itemsByCode.TryGetValue(row.Code, out var items);
+                if (items?.Count > 1) return Error("ambiguous_import_code", "Katalog obsahuje kódy lišící se pouze velikostí písmen. Nejprve je sjednoťte.", 409);
+                var item = items?.SingleOrDefault();
                 if (item is null)
                 {
                     item = new MenuItem { Code = row.Code, Name = row.Name };
                     db.MenuItems.Add(item);
+                    itemsByCode.Add(row.Code, [item]);
                     created++;
                 }
                 else updated++;

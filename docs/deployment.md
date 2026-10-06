@@ -40,6 +40,28 @@ On Linux you may also run `chmod +x run.sh` and then `./run.sh`.
 
 Use an HTTPS reverse proxy or configure Kestrel HTTPS directly. Production session/CSRF cookies require HTTPS; mobile browsers also require a secure origin for per-tap UUID generation. Bind an HTTP backend to loopback and have the proxy forward all paths without rewriting. Do not expose an HTTP production origin. Set `ASPNETCORE_ENVIRONMENT=Production`; Development is only for local HTTP tests.
 
+The API processes `X-Forwarded-Proto` and `X-Forwarded-For` before authentication
+and CSRF validation. Configure the proxy to overwrite these headers with the
+original request scheme and client address. Loopback proxies are trusted by default.
+For a proxy on another host, set `ReverseProxy__KnownProxies__0` to its backend-facing
+IP address (add `__1`, `__2`, etc. for additional trusted addresses). Only one proxy
+hop is processed; do not accept forwarded headers directly from public clients.
+For example, an Nginx HTTPS server forwarding to the loopback backend should use:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:5080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $remote_addr;
+}
+```
+
+If `/auth/csrf` reports that `Cookie.SecurePolicy = Always` requires SSL, check
+that the public URL uses HTTPS and that the trusted proxy sends
+`X-Forwarded-Proto: https`. For local HTTP testing, use
+`ASPNETCORE_ENVIRONMENT=Development` before starting the application.
+
 ## Configuration
 
 Supply these environment variables through the service manager or secret store:
@@ -50,6 +72,7 @@ Supply these environment variables through the service manager or secret store:
 | `ConnectionStrings__RestaurantOrders` | Database connection string; use an absolute SQLite path outside the release directory |
 | `ASPNETCORE_URLS` | Backend listener, e.g. `http://127.0.0.1:5080` behind HTTPS proxy |
 | `AllowedHosts` | Public hostname(s), separated by semicolons |
+| `ReverseProxy__KnownProxies__0` | Additional trusted proxy IP; loopback proxies are trusted by default |
 | `Session__Hours` | Session lifetime with sliding renewal; default 12 |
 | `DataProtection__KeysPath` | Persistent directory writable only by the service account; survives redeployments |
 | `Bootstrap__Username`, `Bootstrap__Password` | First-administrator credentials; remove immediately after bootstrap |
@@ -95,5 +118,5 @@ SQL Server's usual case-insensitive collation treats code variants as duplicates
 - Stop writes and take a database backup before upgrades/migrations. For SQLite, stop the service before copying the database (including any journal/WAL files), or use SQLite's online backup API. For SQL Server use database-native backups.
 - Keep database and Data Protection keys outside release directories, back them up, and test restores. Historical orders are never automatically purged.
 - Deploy to a new release directory to avoid stale static assets, migrate, start the service and check login/table/history flows. A rollback must account for schema compatibility; restore the backup if needed.
-- Behind a reverse proxy, the built-in login limit sees the proxy address unless trusted forwarding is configured by the host. It permits ten attempts per minute per address. Do not blindly trust forwarded headers from public clients.
+- The built-in login limit permits ten attempts per minute per client address. Behind a trusted proxy, it uses `X-Forwarded-For`; otherwise it sees the proxy address.
 - There is no payment terminal integration or refund action. The application records staff declarations that payment occurred elsewhere.

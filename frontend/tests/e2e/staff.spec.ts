@@ -16,6 +16,8 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     page.getByRole("heading", { name: "Správa restaurace" }),
   ).toBeVisible();
+  await expect(page.locator("header")).toBeVisible();
+  await expect(page.getByRole("navigation")).toBeVisible();
   await page.getByLabel("Název", { exact: true }).fill(`Stůl ${suffix}`);
   await page.getByRole("button", { name: "Uložit", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("Záznam byl uložen");
@@ -55,6 +57,14 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     page.getByRole("heading", { name: "Vyberte stůl" }),
   ).toBeVisible();
+  await expect(page.locator("header")).toBeHidden();
+  await expect(page.getByRole("navigation")).toHaveCount(0);
+  const phoneViewport = page.viewportSize()!;
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.locator("header")).toBeVisible();
+  await expect(page.getByRole("navigation")).toBeVisible();
+  await expect(page.locator(".mobile-menu")).toBeHidden();
+  await page.setViewportSize(phoneViewport);
   await expect(
     page.getByRole("button", { name: "Správa", exact: true }),
   ).toHaveCount(0);
@@ -70,6 +80,10 @@ test("administrator configures restaurant, then staff completes phone service fl
   const order = page.getByRole("region", { name: "Aktuální objednávka" });
   await expect(
     order.getByText(`3× Káva ${suffix}`, { exact: true }),
+  ).toBeVisible();
+  await page.locator(".mobile-menu summary").tap();
+  await expect(
+    page.getByRole("button", { name: "Odhlásit", exact: true }),
   ).toBeVisible();
   await expect(
     page

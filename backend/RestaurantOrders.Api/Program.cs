@@ -10,6 +10,8 @@ using RestaurantOrders.Api.Orders;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 var provider = builder.Configuration["Database:Provider"] ?? "Sqlite";
@@ -31,6 +33,13 @@ switch (provider.ToLowerInvariant())
 }
 
 builder.Services.AddProblemDetails();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Keep the framework's loopback trust defaults; add only explicitly configured proxies.
+    foreach (var proxy in builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? [])
+        options.KnownProxies.Add(IPAddress.Parse(proxy));
+});
 var protection = builder.Services.AddDataProtection().SetApplicationName("RestaurantOrders");
 if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
     protection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
@@ -73,6 +82,7 @@ builder.Services.AddAntiforgery(options =>
 });
 var app = builder.Build();
 app.UseExceptionHandler();
+app.UseForwardedHeaders();
 await using (var scope = app.Services.CreateAsyncScope())
 {
     await scope.ServiceProvider.GetRequiredService<RestaurantDbContext>().Database.MigrateAsync();

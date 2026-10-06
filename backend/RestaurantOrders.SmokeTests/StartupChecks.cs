@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RestaurantOrders.Api.Auth;
@@ -29,7 +31,7 @@ internal static class StartupChecks
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
-            await StartAndStop(database);
+            await StartAndStop(database, proxiedHttps: true);
             if (await db.Accounts.CountAsync() != 2 ||
                 await accounts.AuthenticateAsync("jana", "Changed-password-123", default) is null ||
                 await accounts.AuthenticateAsync("jana", "Lucie", default) is not null ||
@@ -39,7 +41,7 @@ internal static class StartupChecks
         }
     }
 
-    private static async Task StartAndStop(TestDatabase database)
+    private static async Task StartAndStop(TestDatabase database, bool proxiedHttps = false)
     {
         var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
         var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent!.Name;
@@ -51,7 +53,8 @@ internal static class StartupChecks
         var address = $"http://127.0.0.1:{port}";
         var start = new ProcessStartInfo("dotnet") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
         start.ArgumentList.Add(api);
-        start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+        start.Environment["ASPNETCORE_ENVIRONMENT"] = proxiedHttps ? "Production" : "Development";
+        start.Environment["DOTNET_ENVIRONMENT"] = start.Environment["ASPNETCORE_ENVIRONMENT"];
         start.Environment["ASPNETCORE_URLS"] = address;
         start.Environment["Database__Provider"] = database.Provider;
         start.Environment["ConnectionStrings__RestaurantOrders"] = database.Connection;
@@ -60,12 +63,16 @@ internal static class StartupChecks
         var errors = process.StandardError.ReadToEndAsync();
         try
         {
-            using var client = new HttpClient { BaseAddress = new Uri(address), Timeout = TimeSpan.FromSeconds(2) };
+            using var client = new HttpClient(new HttpClientHandler { UseCookies = false }) { BaseAddress = new Uri(address), Timeout = TimeSpan.FromSeconds(2) };
             for (var attempt = 0; attempt < 300 && !process.HasExited; attempt++)
             {
                 try
                 {
-                    if ((await client.GetAsync("/health/database")).IsSuccessStatusCode) return;
+                    if ((await client.GetAsync("/health/database")).IsSuccessStatusCode)
+                    {
+                        if (proxiedHttps) await CheckProxiedAuthentication(client);
+                        return;
+                    }
                 }
                 catch (HttpRequestException) { }
                 catch (TaskCanceledException) { }
@@ -80,5 +87,44 @@ internal static class StartupChecks
             var log = await output + await errors;
             if (log.Contains("fail:") || log.Contains("Unhandled exception")) Console.Error.WriteLine(log);
         }
+    }
+
+    private static async Task CheckProxiedAuthentication(HttpClient client)
+    {
+        // Simulate TLS termination at a trusted loopback proxy with an HTTP backend.
+        client.DefaultRequestHeaders.Add("X-Forwarded-Proto", "https");
+        client.DefaultRequestHeaders.Add("X-Forwarded-For", "192.0.2.10");
+        using var csrf = await client.GetAsync("/auth/csrf");
+        if (!csrf.IsSuccessStatusCode)
+            throw new Exception($"Production CSRF behind HTTPS proxy failed: {await csrf.Content.ReadAsStringAsync()}");
+        var csrfCookie = SecureCookie(csrf, "RestaurantOrders.Csrf");
+        var token = (await csrf.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("token").GetString();
+        client.DefaultRequestHeaders.Add("Cookie", csrfCookie);
+
+        var credentials = new { username = "jana", password = "Changed-password-123" };
+        using var missingToken = await client.PostAsJsonAsync("/auth/login", credentials);
+        if (missingToken.StatusCode != HttpStatusCode.BadRequest)
+            throw new Exception("Production proxy login accepted a missing CSRF token.");
+
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", token);
+        using var login = await client.PostAsJsonAsync("/auth/login", credentials);
+        if (!login.IsSuccessStatusCode)
+            throw new Exception($"Production login behind HTTPS proxy failed: {await login.Content.ReadAsStringAsync()}");
+        var sessionCookie = SecureCookie(login, "RestaurantOrders.Session");
+        client.DefaultRequestHeaders.Remove("Cookie");
+        // Forward the cookies explicitly because the test connection itself is HTTP.
+        client.DefaultRequestHeaders.Add("Cookie", $"{csrfCookie}; {sessionCookie}");
+        using var me = await client.GetAsync("/auth/me");
+        if (!me.IsSuccessStatusCode)
+            throw new Exception("Production session behind HTTPS proxy was not authenticated.");
+        Console.WriteLine("PASS production HTTPS proxy CSRF, secure cookies and authenticated session");
+    }
+
+    private static string SecureCookie(HttpResponseMessage response, string name)
+    {
+        var cookie = response.Headers.GetValues("Set-Cookie").Single(value => value.StartsWith($"{name}=", StringComparison.Ordinal));
+        if (!cookie.Split(';').Any(part => part.Trim().Equals("secure", StringComparison.OrdinalIgnoreCase)))
+            throw new Exception($"Production {name} cookie is not secure.");
+        return cookie.Split(';')[0];
     }
 }

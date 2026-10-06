@@ -12,6 +12,8 @@ npm --prefix frontend run test:e2e
 The executable backend suite verifies actual API startup with missing and empty
 databases, automatic migrations/default accounts, preservation of changed credentials
 and data on restart, and administrator bootstrap without prior migration.
+It also verifies production CSRF issuance and login behind a trusted HTTPS proxy,
+secure session/CSRF cookies, and rejection of login without a CSRF token.
 It also runs real HTTP requests covering authentication, authorization, catalog
 validation, CSV parsing/import, saved order snapshots, partial delivery/payment,
 corrections, closure, history, audit and concurrent devices. It fails on a nonzero
@@ -40,4 +42,5 @@ The complete `bash scripts/ci.sh` sequence also runs the browser tests against t
 published API with its production-built frontend, not only Vite. These include a
 server-committed tap whose response is lost, safe retry, cancelled paid removal,
 confirmed paid removal, and read-only history. Test servers use Development cookies
-on loopback HTTP; production HTTPS/reverse-proxy configuration is deployment-specific.
+on loopback HTTP; the backend suite simulates a trusted proxy forwarding HTTPS
+to an HTTP listener. Actual proxy and certificate configuration is deployment-specific.

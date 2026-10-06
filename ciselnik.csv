@@ -1,211 +1,211 @@
 CISMAT,NAZMAT,DRUMAT2,PROCEN5,SAZDPH
-141388         ,"Frisco Mojito 0,33 plech      ",A ,41.32,21
-1414           ,mandle 70g                    ,po,44.55,12
-8586015878619  ,"Kešu,arašidy,mandle 150g      ",po,61.61,12
-cok            ,čokoláda PROCACAO             ,po,141.96,12
-111126         ,víno svařené 2dcl s ovocem    ,A ,66.12,21
-131200         ,vaječný likér                 ,A ,41.32,21
-141365         ,MARTINI BIANCO 1DCL           ,A ,53.72,21
-141366         ,MARTINI EXTRA DRY 1DCL        ,A ,53.72,21
-141367         ,CAMPARI  4cl                  ,A ,40.5,21
-141368         ,Zelená Božkov 4cl             ,A ,41.32,21
-141369         ,Griotka horká                 ,A ,65.29,21
-141370         ,víno červené 1dcl Zwei /portug,A ,31.4,21
-141371         ,víno pozdní sběr VM           ,A ,280.99,21
-141372         ,víno 0.75l výběrové - LÁHEV   ,A ,247.93,21
-141373         ,Víno bílé Chardonnay          ,A ,31.4,21
-141374         ,VODKA Finlandia               ,A ,49.59,21
-141375         ,"Sekt Bohemia-láhev 0,75l      ",A ,205.79,21
-141376         ,JAGERMEISTER                  ,A ,57.85,21
-141378         ,RUM Božkov 4cl/Griotka Božkov ,A ,41.32,21
-141379         ,BECHEROVKA 4cl                ,A ,41.32,21
-141381         ,Hruškovice 42%                ,A ,57.85,21
-141382         ,TULLAMORE DEW 4cl             ,A ,61.98,21
-141383         ,METAXA  4cl                  ,A ,61.98,21
-141385         ,pivo PILSNER URQUELL 0.5l     ,A ,47.93,21
-141389         ,Fernet Stock 4cl              ,A ,45.45,21
-141400         ,GIN 4cl                       ,A ,53.72,21
-141405         ,Slivovice 52% 4cl             ,A ,65.29,21
-141555         ,Limoncino 4cl                 ,A ,39.67,21
-14981          ,Proseco 1dcl                  ,A ,36.36,21
-14982          ,Proseco Lahev výběr/MIONETO ,A ,371.07,21
-1515           ,rum DON Papa 4cl              ,A ,99.17,21
-15150          ,rum Havana Club 4cl           ,A ,61.98,21
-1516           ,RUM  Republika 4cl            ,A ,53.72,21
-1550           ,RUM  Diplomatico 4cl          ,A ,66.12,21
-1551           ,Tatranský  Tea 4cl            ,A ,65.29,21
+141388,"Frisco Mojito 0,33 plech      ",Alkohol,41.32,21
+1414,mandle 70g                    ,Pochutiny,44.55,12
+8586015878619,"Kešu,arašidy,mandle 150g      ",Pochutiny,61.61,12
+cok            ,čokoláda PROCACAO             ,Pochutiny,141.96,12
+111126,víno svařené 2dcl s ovocem    ,Alkohol,66.12,21
+131200,vaječný likér                 ,Alkohol,41.32,21
+141365,MARTINI BIANCO 1DCL           ,Alkohol,53.72,21
+141366,MARTINI EXTRA DRY 1DCL        ,Alkohol,53.72,21
+141367,CAMPARI  4cl                  ,Alkohol,40.5,21
+141368,Zelená Božkov 4cl             ,Alkohol,41.32,21
+141369,Griotka horká                 ,Alkohol,65.29,21
+141370,víno červené 1dcl Zwei /portug,Alkohol,31.4,21
+141371,víno pozdní sběr VM           ,Alkohol,280.99,21
+141372,víno 0.75l výběrové - LÁHEV   ,Alkohol,247.93,21
+141373,Víno bílé Chardonnay          ,Alkohol,31.4,21
+141374,VODKA Finlandia               ,Alkohol,49.59,21
+141375,"Sekt Bohemia-láhev 0,75l      ",Alkohol,205.79,21
+141376,JAGERMEISTER                  ,Alkohol,57.85,21
+141378,RUM Božkov 4cl/Griotka Božkov ,Alkohol,41.32,21
+141379,BECHEROVKA 4cl                ,Alkohol,41.32,21
+141381,Hruškovice 42%                ,Alkohol,57.85,21
+141382,TULLAMORE DEW 4cl             ,Alkohol,61.98,21
+141383,METAXA  4cl                  ,Alkohol,61.98,21
+141385,pivo PILSNER URQUELL 0.5l     ,Alkohol,47.93,21
+141389,Fernet Stock 4cl              ,Alkohol,45.45,21
+141400,GIN 4cl                       ,Alkohol,53.72,21
+141405,Slivovice 52% 4cl             ,Alkohol,65.29,21
+141555,Limoncino 4cl                 ,Alkohol,39.67,21
+14981,Proseco 1dcl                  ,Alkohol,36.36,21
+14982,Proseco Lahev výběr/MIONETO ,Alkohol,371.07,21
+1515,rum DON Papa 4cl              ,Alkohol,99.17,21
+15150,rum Havana Club 4cl           ,Alkohol,61.98,21
+1516,RUM  Republika 4cl            ,Alkohol,53.72,21
+1550,RUM  Diplomatico 4cl          ,Alkohol,66.12,21
+1551,Tatranský  Tea 4cl            ,Alkohol,65.29,21
 ,,,,
-11             ,čerstvý ZÁZVOR                ,c ,70.25,21
-140357         ,LONDÝNSKÁ MLHA                ,c ,73.55,21
-140358         ,Černý  DILMAH                 ,c ,57.85,21
-140400         ,Heřmánek DILMAH               ,c ,57.85,21
-140401         ,Máta DILMAH                   ,c ,57.85,21
-140402         ,Jasmín DILMAH                 ,c ,57.85,21
-141341         ,Zelený                        ,c ,57.85,21
-141343         ,Ayurveda                      ,c ,57.85,21
-141345         ,"Ovocný-sweet,roibos           ",c ,57.85,21
-141347         ,Maroccan mint                 ,c ,57.85,21
-141350         ,Winter-ovocný                 ,c ,57.85,21
-143757         ,Bylinkový                     ,c ,57.85,21
-144408         ,Masala CHAI                   ,c ,70.25,21
-144409         ,Jasmínový/bílý                ,c ,57.85,21
-146242         ,MED                           ,c ,8.93,12
-LER            ,LEROS                         ,c ,37.19,21
+11,čerstvý ZÁZVOR                ,Čaj,70.25,21
+140357,LONDÝNSKÁ MLHA                ,Čaj,73.55,21
+140358,Černý  DILMAH                 ,Čaj,57.85,21
+140400,Heřmánek DILMAH               ,Čaj,57.85,21
+140401,Máta DILMAH                   ,Čaj,57.85,21
+140402,Jasmín DILMAH                 ,Čaj,57.85,21
+141341,Zelený                        ,Čaj,57.85,21
+141343,Ayurveda                      ,Čaj,57.85,21
+141345,"Ovocný-sweet,roibos           ",Čaj,57.85,21
+141347,Maroccan mint                 ,Čaj,57.85,21
+141350,Winter-ovocný                 ,Čaj,57.85,21
+143757,Bylinkový                     ,Čaj,57.85,21
+144408,Masala CHAI                   ,Čaj,70.25,21
+144409,Jasmínový/bílý                ,Čaj,57.85,21
+146242,MED                           ,Čaj,8.93,12
+LER            ,LEROS                         ,Čaj,37.19,21
 ,,,,
-1000001        ,"Crodino 1,75dcl               ",D ,61.98,21
-1000005        ,Crodino  SPRITZ               ,D ,76.03,21
-111127         ,Punč 2dcl                     ,D ,81.82,21
-111241         ,Štrůdl na ledu                ,D ,99.17,21
-111242         ,MIMOSA                        ,D ,73.55,21
-111244         ,Cosmop./FLIRTINI              ,D ,99.17,21
-131215         ,Cinzano Roso-tonik            ,D ,99.17,21
-131501         ,APEROL Spritz nealko          ,D ,76.03,21
-141348         ,HORKÁ HRUŠKA nealko           ,D ,57.02,21
-141377         ,GROG                          ,D ,65.29,21
-141722         ,Pomerančové CAMPARI           ,D ,90.91,21
-144412         ,HORKÉ JABLKO nealko           ,D ,57.02,21
-144490         ,Aperol nealko                 ,D ,78.51,21
-144498         ,BLUE HEAVEN                   ,D ,99.17,21
-Ap             ,APEROL Spritz                 ,D ,99.17,21
-GT             ,GinTonic/ GIMLET-gin+l        ,D ,90.91,21
-KOKN           ,Mojito nealko                 ,D ,78.51,21
-LIM            ,LIMONCINO Spritz              ,D ,78.51,21
-MOJ            ,MOJITO                        ,D ,107.44,21
-PC             ,Pomerančové campari           ,D ,90.91,21
+1000001,"Crodino 1,75dcl               ",Drink,61.98,21
+1000005,Crodino  SPRITZ               ,Drink,76.03,21
+111127,Punč 2dcl                     ,Drink,81.82,21
+111241,Štrůdl na ledu                ,Drink,99.17,21
+111242,MIMOSA                        ,Drink,73.55,21
+111244,Cosmop./FLIRTINI              ,Drink,99.17,21
+131215,Cinzano Roso-tonik            ,Drink,99.17,21
+131501,APEROL Spritz nealko          ,Drink,76.03,21
+141348,HORKÁ HRUŠKA nealko           ,Drink,57.02,21
+141377,GROG                          ,Drink,65.29,21
+141722,Pomerančové CAMPARI           ,Drink,90.91,21
+144412,HORKÉ JABLKO nealko           ,Drink,57.02,21
+144490,Aperol nealko                 ,Drink,78.51,21
+144498,BLUE HEAVEN                   ,Drink,99.17,21
+Ap             ,APEROL Spritz                 ,Drink,99.17,21
+GT             ,GinTonic/ GIMLET-gin+l        ,Drink,90.91,21
+KOKN           ,Mojito nealko                 ,Drink,78.51,21
+LIM            ,LIMONCINO Spritz              ,Drink,78.51,21
+MOJ            ,MOJITO                        ,Drink,107.44,21
+PC             ,Pomerančové campari           ,Drink,90.91,21
 ,,,,
-134999         ,"Targa Tonica originál 0,25l   ",f ,45.45,21
-135000         ,"KOFOLA plech 0,25l            ",f ,28.1,21
-135001         ,"KOFOLA Original 0,25          ",f ,41.32,21
-135002         ,"Korunní Jemná 0,33l           ",f ,32.23,21
-135003         ,"RC COLA No sugar 0,25l        ",f ,45.45,21
-135004         ,"RC COLA 0,25l                 ",f ,45.45,21
-135005         ,Kombucha Prager's  Original   ,f ,65.29,21
-135006         ,Targa POMERANC                ,f ,45.45,21
-135007         ,"VINEA Bílá 0,25 l             ",f ,40.5,21
-135008         ,TARGA Tonica ROSA             ,f ,45.45,21
-135009         ,Targa CITRON                  ,f ,45.45,21
-135011         ,Targa MARACUJA                ,f ,45.45,21
-135012         ,"RC cola PLECH 0,33L           ",f ,41.32,21
-135013         ,"VINEA červená 0,25l           ",f ,40.5,21
-135020         ,TARGA Tonica GINGER           ,f ,45.45,21
-135022         ,Pivo NEALKO příchut           ,f ,36.36,21
-141101         ,"Rajec PET 0,33 neperlivá      ",f ,24.79,21
-141359         ,"Rajec SKLO neperlivá 0,33l    ",f ,28.93,21
-cur01          ,"Curiosa POMERANČ džus 0,25l   ",f ,45.45,21
-cur02          ,"Curiosa JAHODA džus 0,25l     ",f ,45.45,21
-cur03          ,"Curiosa JABLKO džus 0,25l     ",f ,45.45,21
-cur04          ,"Curiosa MULTI džus 0,25l      ",f ,45.45,21
-cur05          ,"Curiosa Hruška máta 0,25      ",f ,45.45,21
-cur06          ,Curiosa Ananas                ,f ,48.76,21
-cur07          ,"Curiosa čer. rybíz, džus 0,25l",f ,45.45,21
+134999,"Targa Tonica originál 0,25l   ",Kofola,45.45,21
+135000,"KOFOLA plech 0,25l            ",Kofola,28.1,21
+135001,"KOFOLA Original 0,25          ",Kofola,41.32,21
+135002,"Korunní Jemná 0,33l           ",Kofola,32.23,21
+135003,"RC COLA No sugar 0,25l        ",Kofola,45.45,21
+135004,"RC COLA 0,25l                 ",Kofola,45.45,21
+135005,Kombucha Prager's  Original   ,Kofola,65.29,21
+135006,Targa POMERANC                ,Kofola,45.45,21
+135007,"VINEA Bílá 0,25 l             ",Kofola,40.5,21
+135008,TARGA Tonica ROSA             ,Kofola,45.45,21
+135009,Targa CITRON                  ,Kofola,45.45,21
+135011,Targa MARACUJA                ,Kofola,45.45,21
+135012,"RC cola PLECH 0,33L           ",Kofola,41.32,21
+135013,"VINEA červená 0,25l           ",Kofola,40.5,21
+135020,TARGA Tonica GINGER           ,Kofola,45.45,21
+135022,Pivo NEALKO příchut           ,Kofola,36.36,21
+141101,"Rajec PET 0,33 neperlivá      ",Kofola,24.79,21
+141359,"Rajec SKLO neperlivá 0,33l    ",Kofola,28.93,21
+cur01          ,"Curiosa POMERANČ džus 0,25l   ",Kofola,45.45,21
+cur02          ,"Curiosa JAHODA džus 0,25l     ",Kofola,45.45,21
+cur03          ,"Curiosa JABLKO džus 0,25l     ",Kofola,45.45,21
+cur04          ,"Curiosa MULTI džus 0,25l      ",Kofola,45.45,21
+cur05          ,"Curiosa Hruška máta 0,25      ",Kofola,45.45,21
+cur06          ,Curiosa Ananas                ,Kofola,48.76,21
+cur07          ,"Curiosa čer. rybíz, džus 0,25l",Kofola,45.45,21
 ,,,,
-10013          ,Šlehačka                      ,k ,21.43,12
-132015         ,Baby mléko                    ,k ,17.86,12
-144448         ,shot mléka,K ,4.13,21
-ALG            ,ALGERINA CAFFÉ                ,k ,81.82,21
-CAF            ,Caffé con panna - vídeň       ,k ,71.9,21
-CAP            ,CAPUCCINO                     ,k ,59.5,21
-Cap2           ,Capuccino velké               ,k ,65.29,21
-ES             ,Espreso     ,k ,45.45,21
-esa            ,Espresso AMERIKANO            ,k ,53.72,21
-ESD            ,Espresso DOPIO                ,k ,65.29,21
-EsF            ,Espresso FLAT WHITE/ affogato ,k ,73.55,21
-ESM            ,Espresso LUNGO      ,k ,49.59,21
-ESMA           ,Espresso Macchiatto           ,k ,53.72,21
-EsP            ,PŘÍCHUT                       ,k ,8.26,21
-ESS            ,Shot kávy navíc               ,k ,20.66,21
-EST            ,Espresso TONIC/ SUNRISE       ,k ,81.82,21
-IRI            ,IRISH CAFFÉ                   ,k ,95.04,21
-KEL            ,Kelímek/  Decofein   ,k ,4.13,21
-LAT            ,Latté machiatto               ,k ,70.25,21
-MOC            ,Mocaccino                     ,k ,78.51,21
+10013,Šlehačka                      ,Káva,21.43,12
+132015,Baby mléko                    ,Káva,17.86,12
+144448,shot mléka,Káva,4.13,21
+ALG            ,ALGERINA CAFFÉ                ,Káva,81.82,21
+CAF            ,Caffé con panna - vídeň       ,Káva,71.9,21
+CAP            ,CAPUCCINO                     ,Káva,59.5,21
+Cap2           ,Capuccino velké               ,Káva,65.29,21
+ES             ,Espreso     ,Káva,45.45,21
+esa            ,Espresso AMERIKANO            ,Káva,53.72,21
+ESD            ,Espresso DOPIO                ,Káva,65.29,21
+EsF            ,Espresso FLAT WHITE/ affogato ,Káva,73.55,21
+ESM            ,Espresso LUNGO      ,Káva,49.59,21
+ESMA           ,Espresso Macchiatto           ,Káva,53.72,21
+EsP            ,PŘÍCHUT                       ,Káva,8.26,21
+ESS            ,Shot kávy navíc               ,Káva,20.66,21
+EST            ,Espresso TONIC/ SUNRISE       ,Káva,81.82,21
+IRI            ,IRISH CAFFÉ                   ,Káva,95.04,21
+KEL            ,Kelímek/  Decofein   ,Káva,4.13,21
+LAT            ,Latté machiatto               ,Káva,70.25,21
+MOC            ,Mocaccino                     ,Káva,78.51,21
 ,,,,
-111128         ,vajíčko 1ks                   ,m ,22.32,12
-111222         ,croissant obložený            ,m ,62.73,10
-121650         ,Bagetka příloha               ,m ,7.14,12
-121656         ,Polévka                       ,m ,61.61,12
-12333          ,Salát příloha                 ,m ,40.18,12
-131144         ,TOUST s vajíčkem se salátem   ,m ,115.18,12
-131520         ,"Pomazánka, chléb, salát       ",m ,70.54,12
-135500         ,Bagel s trhaným masem         ,m ,124.11,12
-135501         ,WRAP  s trhaným masem         ,m ,124.11,12
-135502         ,"Quinoa,salát,sýr/Halloumi     ",m ,186.61,12
-135505         ,Hermelín/Halloumi gril+salát  ,m ,168.75,12
-135506         ,"Bulgur,feta,olivy,raj,salát   ",m ,177.68,12
-141210         ,Panini                        ,m ,88.39,12
-141211         ,Panini Hovězí                 ,m ,88.39,12
-141212         ,Panini Kuřecí                 ,m ,88.39,12
-141213         ,Snídaně -vaječina+nápoj       ,m ,177.68,12
-141214         ,Croissant obložený            ,m ,58.04,12
-141215         ,Sendvič                       ,m ,79.46,12
-bowl           ,"Bowl Meloun, tofu, zelenina   ",m ,79.46,12
-KAN            ,Kanapka/chleba                ,m ,35.71,12
-Q              ,Quiche                        ,m ,62.5,12
-vaf            ,Vafle     ,m ,79.46,12
+111128,vajíčko 1ks                   ,Menu,22.32,12
+111222,croissant obložený            ,Menu,62.73,10
+121650,Bagetka příloha               ,Menu,7.14,12
+121656,Polévka                       ,Menu,61.61,12
+12333,Salát příloha                 ,Menu,40.18,12
+131144,TOUST s vajíčkem se salátem   ,Menu,115.18,12
+131520,"Pomazánka, chléb, salát       ",Menu,70.54,12
+135500,Bagel s trhaným masem         ,Menu,124.11,12
+135501,WRAP  s trhaným masem         ,Menu,124.11,12
+135502,"Quinoa,salát,sýr/Halloumi     ",Menu,186.61,12
+135505,Hermelín/Halloumi gril+salát  ,Menu,168.75,12
+135506,"Bulgur,feta,olivy,raj,salát   ",Menu,177.68,12
+141210,Panini                        ,Menu,88.39,12
+141211,Panini Hovězí                 ,Menu,88.39,12
+141212,Panini Kuřecí                 ,Menu,88.39,12
+141213,Snídaně -vaječina+nápoj       ,Menu,177.68,12
+141214,Croissant obložený            ,Menu,58.04,12
+141215,Sendvič                       ,Menu,79.46,12
+bowl           ,"Bowl Meloun, tofu, zelenina   ",Menu,79.46,12
+KAN            ,Kanapka/chleba                ,Menu,35.71,12
+Q              ,Quiche                        ,Menu,62.5,12
+vaf            ,Vafle     ,Menu,79.46,12
 ,,,,
-111211         ,Matcha MANGO                  ,Ma,73.55,21
-111212         ,"Matcha tea, mát.sirup,citron  ",Ma,61.98,21
-111213         ,Matcha latte                  ,Ma,71.9,21
-111214         ,Matcha ICE/tepla Malina-kokos ,Ma,90.08,21
+111211,Matcha MANGO                  ,Matcha,73.55,21
+111212,"Matcha tea, mát.sirup,citron  ",Matcha,61.98,21
+111213,Matcha latte                  ,Matcha,71.9,21
+111214,Matcha ICE/tepla Malina-kokos ,Matcha,90.08,21
 ,,,,
-111332         ,"voda s mátou a citrónem 0,5l  ",NA,23.97,21
-132255         ,citrón                        ,NA,4.13,21
-135010         ,Grapefruit 1dcl               ,NA,20.66,21
-135014         ,HRUŠKA 1dcl,NA,20.66,21
-135015         ,MANGO 1dcl                    ,NA,23.14,21
-135016         ,JAHODA 1dcl                   ,NA,23.14,21
-135019         ,Pomeranč  1dcl                 ,NA,20.66,21
-141299         ,Voda čistá                    ,NA,16.07,12
-141300         ,"soda 0,3 dcl                  ",NA,21.43,12
-141340         ,Horká čokoláda se šlehačkou   ,NA,70.25,21
-141386         ,pivo nealkoholické Birell     ,NA,36.36,21
-DOM            ,Domácí limonáda/horká dom.    ,NA,65.29,21
-131445         ,ANANAS 1dcl    ,NA,23.14,21
-140359         ,"BRUSINKA 0,1             ",NA,19.83,21
-140362         ,JABLKO 1dcl    ,NA,18.18,21
+111332,"voda s mátou a citrónem 0,5l  ",Nápoje,23.97,21
+132255,citrón                        ,Nápoje,4.13,21
+135010,Grapefruit 1dcl               ,Nápoje,20.66,21
+135014,HRUŠKA 1dcl,Nápoje,20.66,21
+135015,MANGO 1dcl                    ,Nápoje,23.14,21
+135016,JAHODA 1dcl                   ,Nápoje,23.14,21
+135019,Pomeranč  1dcl                 ,Nápoje,20.66,21
+141299,Voda čistá                    ,Nápoje,16.07,12
+141300,"soda 0,3 dcl                  ",Nápoje,21.43,12
+141340,Horká čokoláda se šlehačkou   ,Nápoje,70.25,21
+141386,pivo nealkoholické Birell     ,Nápoje,36.36,21
+DOM            ,Domácí limonáda/horká dom.    ,Nápoje,65.29,21
+131445,ANANAS 1dcl    ,Nápoje,23.14,21
+140359,"BRUSINKA 0,1             ",Nápoje,19.83,21
+140362,JABLKO 1dcl    ,Nápoje,18.18,21
 ,,,,
-02             ,TAPIOKA             ,z ,62.5,12
-111239         ,M-Srdce/ Velikonoc FIGURKA    ,z ,70.54,12
-111614         ,M-Špička                      ,z ,39.29,12
-121600         ,M-DORT                        ,z ,75.89,12
-121601         ,M-CHOUX / Eclerka             ,z ,64.29,12
-121602         ,M-Semifredo                   ,z ,70.54,12
-121603         ,M-Koláček                     ,z ,26.79,12
-121604         ,M-Borůvka věneček/ šlehačkový ,z ,53.57,12
-121605         ,M-Větrník                     ,z ,70.54,12
-121606         ,M-MINI  Větrník               ,z ,51.79,12
-121607         ,M-KREMŠNIT- žloutkový řez     ,z ,43.75,12
-121608         ,M-Tartaletka                  ,z ,66.07,12
-121609         ,M-PANNA cotta                 ,z ,66.96,12
-121611         ,M-KOŠIČEK ovocný              ,z ,42.86,12
-121612         ,M-Mini roláda                 ,z ,50,12
-121613         ,M-DORT mandlový               ,z ,70.54,12
-121615         ,M-Věneček/ kremšnyt           ,z ,43.75,12
-121616         ,M-Pavlova / MINI Pavlova      ,z ,44.64,12
-121617         ,M-PUNČ BEZLAKT. bezlep.       ,z ,44.64,12
-121618         ,M-Jádrový rohlíček            ,Z ,46.43,12
-121619         ,"M-Dortík pistácie, malina     ",z ,79.46,12
-121622         ,M-BATUL dort                  ,z ,70.54,12
-121625         ,M-makronky                    ,z ,41.96,12
-121626         ,M-Brownies                    ,z ,49.11,12
-121629         ,M-RED velvet                  ,z ,70.54,12
-121630         ,m-Laskonka                    ,z ,37.5,12
-121640         ,M-LIČI smetanové              ,z ,75.89,12
-147886         ,DORT MANGOVY                  ,z ,70.54,12
-148866         ,Dort cheesecake JAHODA        ,z ,75.89,12
-148868         ,DORT MALINA-LESNÍ OV.         ,z ,75.89,12
-148869         ,Dort SKYR-Bezlep. ovoce       ,z ,75.89,12
-148900         ,Dort BROWNIES                 ,z ,40.18,12
-148905         ,Dort PAŘÍŽSKÝ ,z ,71.43,12
-Dez            ,Dezert                        ,z ,70.54,12
-DORT           ,Dort narozeninový             ,z ,1696.43,12
+2,TAPIOKA             ,Zákuysky,62.5,12
+111239,M-Srdce/ Velikonoc FIGURKA    ,Zákuysky,70.54,12
+111614,M-Špička                      ,Zákuysky,39.29,12
+121600,M-DORT                        ,Zákuysky,75.89,12
+121601,M-CHOUX / Eclerka             ,Zákuysky,64.29,12
+121602,M-Semifredo                   ,Zákuysky,70.54,12
+121603,M-Koláček                     ,Zákuysky,26.79,12
+121604,M-Borůvka věneček/ šlehačkový ,Zákuysky,53.57,12
+121605,M-Větrník                     ,Zákuysky,70.54,12
+121606,M-MINI  Větrník               ,Zákuysky,51.79,12
+121607,M-KREMŠNIT- žloutkový řez     ,Zákuysky,43.75,12
+121608,M-Tartaletka                  ,Zákuysky,66.07,12
+121609,M-PANNA cotta                 ,Zákuysky,66.96,12
+121611,M-KOŠIČEK ovocný              ,Zákuysky,42.86,12
+121612,M-Mini roláda                 ,Zákuysky,50,12
+121613,M-DORT mandlový               ,Zákuysky,70.54,12
+121615,M-Věneček/ kremšnyt           ,Zákuysky,43.75,12
+121616,M-Pavlova / MINI Pavlova      ,Zákuysky,44.64,12
+121617,M-PUNČ BEZLAKT. bezlep.       ,Zákuysky,44.64,12
+121618,M-Jádrový rohlíček            ,Zákuysky,46.43,12
+121619,"M-Dortík pistácie, malina     ",Zákuysky,79.46,12
+121622,M-BATUL dort                  ,Zákuysky,70.54,12
+121625,M-makronky                    ,Zákuysky,41.96,12
+121626,M-Brownies                    ,Zákuysky,49.11,12
+121629,M-RED velvet                  ,Zákuysky,70.54,12
+121630,m-Laskonka                    ,Zákuysky,37.5,12
+121640,M-LIČI smetanové              ,Zákuysky,75.89,12
+147886,DORT MANGOVY                  ,Zákuysky,70.54,12
+148866,Dort cheesecake JAHODA        ,Zákuysky,75.89,12
+148868,DORT MALINA-LESNÍ OV.         ,Zákuysky,75.89,12
+148869,Dort SKYR-Bezlep. ovoce       ,Zákuysky,75.89,12
+148900,Dort BROWNIES                 ,Zákuysky,40.18,12
+148905,Dort PAŘÍŽSKÝ ,Zákuysky,71.43,12
+Dez            ,Dezert                        ,Zákuysky,70.54,12
+DORT           ,Dort narozeninový             ,Zákuysky,1696.43,12
 ,,,,
-1415098        ,Vanilka 1 kop                 ,zm,32.14,12
-981234         ,Pohár 2 kop.+šleh.            ,zm,84.82,12
-981235         ,Horké MALINY                  ,zm,84.82,12
-981236         ,Sorbet 1 kop                  ,zm,39.29,12
-LED            ,Ledová - CAP                  ,zm,73.55,21
-LED0           ,Ledová bez mléka              ,zm,61.98,21
-LEDF           ,Ledový Flat white             ,zm,90.08,21
-LEDZ1          ,Ledová+ zmr+CAP               ,zm,95.04,21
-LEDZ2          ,"Ledové, zmrzlina, šlehačka    ",zm,99.17,21
+1415098,Vanilka 1 kop                 ,Zmrzlina,32.14,12
+981234,Pohár 2 kop.+šleh.            ,Zmrzlina,84.82,12
+981235,Horké MALINY                  ,Zmrzlina,84.82,12
+981236,Sorbet 1 kop                  ,Zmrzlina,39.29,12
+LED            ,Ledová - CAP                  ,Zmrzlina,73.55,21
+LED0           ,Ledová bez mléka              ,Zmrzlina,61.98,21
+LEDF           ,Ledový Flat white             ,Zmrzlina,90.08,21
+LEDZ1          ,Ledová+ zmr+CAP               ,Zmrzlina,95.04,21
+LEDZ2          ,"Ledové, zmrzlina, šlehačka    ",Zmrzlina,99.17,21
