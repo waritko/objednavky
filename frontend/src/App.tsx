@@ -177,7 +177,14 @@ export function App() {
           confirmPaidRemoval,
         });
         setOrder(updated);
-        if (action === "paid") downloadCheckoutCsv(order, updated);
+        if (action === "paid")
+          downloadCheckoutCsv(
+            order,
+            updated,
+            catalog.items,
+            catalog.tables.find((table) => table.id === updated.tableId)
+              ?.name || "Stůl",
+          );
       } catch (error) {
         if (error instanceof ApiError && error.status === 409)
           setOrder(await api<Order>(`/orders/${order.id}`));

@@ -223,11 +223,15 @@ test("administrator configures restaurant, then staff completes phone service fl
     .getByRole("button", { name: "Zaplatit vybrané", exact: true })
     .tap();
   const partialDownload = await partialDownloadPromise;
-  expect(partialDownload.suggestedFilename()).toMatch(/^checkout-.*\.csv$/);
+  expect(partialDownload.suggestedFilename()).toMatch(
+    new RegExp(
+      `^platba-Stůl ${suffix}-\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}-\\d{3}\\.csv$`,
+    ),
+  );
   const partialCsv = await readFile((await partialDownload.path())!, "utf8");
   expect(partialCsv).toMatch(
     new RegExp(
-      `^\\uFEFFproduct_id,product_name,quantity\\r\\n"[0-9a-f-]{36}","Káva ${suffix}",1\\r\\n$`,
+      `^\\uFEFFproduct_code,product_name,quantity\\r\\n"${suffix}","Káva ${suffix}",1\\r\\n$`,
     ),
   );
   await expect(
