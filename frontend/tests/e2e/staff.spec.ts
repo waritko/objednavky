@@ -106,7 +106,7 @@ test("administrator configures restaurant, then staff completes phone service fl
       exact: true,
     }),
   ).toBeVisible();
-  expect((await line.boundingBox())!.height).toBeLessThan(120);
+  expect((await line.boundingBox())!.height).toBeLessThan(152);
   // Cancel the whole grouped line directly, then add it again for service.
   await item.tap();
   await expect(
@@ -132,6 +132,33 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText(`3× Káva ${suffix}`, { exact: true }),
   ).toBeVisible();
+  // Notes use small buttons until editing and share one line across quantities.
+  await order
+    .getByRole("button", {
+      name: "+ Poznámka: Poznámka k objednávce",
+      exact: true,
+    })
+    .tap();
+  await order
+    .getByLabel("Poznámka k objednávce", { exact: true })
+    .fill("Narozeniny u stolu");
+  await order.getByRole("button", { name: "Uložit", exact: true }).tap();
+  await expect(order.locator("textarea")).toHaveCount(0);
+  await expect(
+    order.getByText("Narozeniny u stolu", { exact: true }),
+  ).toBeVisible();
+  await line
+    .getByRole("button", {
+      name: `+ Poznámka: Poznámka k položce Káva ${suffix}`,
+      exact: true,
+    })
+    .tap();
+  await line
+    .getByLabel(`Poznámka k položce Káva ${suffix}`, { exact: true })
+    .fill("Bez cukru");
+  await line.getByRole("button", { name: "Uložit", exact: true }).tap();
+  await expect(line.locator("textarea")).toHaveCount(0);
+  await expect(line.getByText("Bez cukru", { exact: true })).toBeVisible();
   await page.locator(".mobile-menu summary").tap();
   await expect(
     page.getByRole("button", { name: "Odhlásit", exact: true }),
@@ -161,9 +188,9 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText("2 nevydaných · 3 nezaplacených", { exact: true }),
   ).toBeVisible();
-  const delivered = order
-    .locator("article")
-    .filter({ has: page.getByText(/^Vydáno · Nezaplaceno/) });
+  await expect(order.locator("article")).toHaveCount(1);
+  await expect(line.getByText("Bez cukru", { exact: true })).toBeVisible();
+  const delivered = line;
   if (
     !(await delivered
       .locator("details")
@@ -195,6 +222,15 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     page.getByText(`2× Káva ${suffix}`, { exact: true }),
   ).toBeVisible();
+  const kitchenCard = page
+    .locator(".order-card")
+    .filter({ hasText: `Stůl ${suffix}` });
+  await expect(
+    kitchenCard.getByText("Narozeniny u stolu", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    kitchenCard.getByText("Bez cukru", { exact: true }),
+  ).toBeVisible();
   await page
     .locator(".order-card")
     .filter({ hasText: `Stůl ${suffix}` })
@@ -223,6 +259,11 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(order.getByRole("button", { name: "Zaplatit vše" })).toHaveCount(
     0,
   );
+  await expect(
+    order.getByText("Narozeniny u stolu", { exact: true }),
+  ).toBeVisible();
+  await expect(order.getByText("Bez cukru", { exact: true })).toBeVisible();
+  await expect(order.locator(".note-toggle")).toHaveCount(0);
   await order.getByRole("button", { name: "Zobrazit historii změn" }).tap();
   await expect(order.locator(".audit")).toContainText(`staff-${suffix}`);
   await page

@@ -98,7 +98,14 @@ export function OrderPanel({
       <p>
         {order.undeliveredCount} nevydaných · {order.unpaidCount} nezaplacených
       </p>
-      <NoteEditor key={order.id} note={order.note} label="Poznámka k objednávce" readOnly={closed} busy={busy} save={(note) => saveNote(note)} />
+      <NoteEditor
+        key={order.id}
+        note={order.note}
+        label="Poznámka k objednávce"
+        readOnly={closed}
+        busy={busy}
+        save={(note) => saveNote(note)}
+      />
       <div className="unit-list">
         {groupUnits(order.units).map((group) => {
           const unit = group[0];
@@ -128,7 +135,7 @@ export function OrderPanel({
                   <button
                     className="danger cancel-line"
                     disabled={busy}
-                    aria-label={`Odebrat řádek ${group.length}× ${unit.itemName}`}
+                    aria-label={`Odebrat řádek ${active.length}× ${unit.itemName}`}
                     onClick={() => void cancelLine(active)}
                   >
                     ×
@@ -141,7 +148,14 @@ export function OrderPanel({
                   : `${active.filter((unit) => !!unit.processedAt).length}/${active.length} vydáno · ${active.filter((unit) => !!unit.paidAt).length}/${active.length} zaplaceno`}{" "}
                 <span className="unit-added-time"> · {time(unit.addedAt)}</span>
               </p>
-              <NoteEditor key={`${order.id}:${unit.menuItemId}`} note={order.lineNotes[unit.menuItemId] || null} label={`Poznámka k položce ${unit.itemName}`} readOnly={closed || removed} busy={busy} save={(note) => saveNote(note, unit.menuItemId)} />
+              <NoteEditor
+                key={`${order.id}:${unit.menuItemId}`}
+                note={order.lineNotes[unit.menuItemId] || null}
+                label={`Poznámka k položce ${unit.itemName}`}
+                readOnly={closed || removed}
+                busy={busy}
+                save={(note) => saveNote(note, unit.menuItemId)}
+              />
               {!closed && !removed && (
                 <div className="quantity" aria-label={`Výběr ${unit.itemName}`}>
                   <button

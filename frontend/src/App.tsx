@@ -190,9 +190,13 @@ export function App() {
     let saved = false;
     await run(async () => {
       try {
-        setOrder(await api<Order>(`/orders/${order.id}/note`, {
-          concurrencyToken: order.concurrencyToken, note, menuItemId,
-        }));
+        setOrder(
+          await api<Order>(`/orders/${order.id}/note`, {
+            concurrencyToken: order.concurrencyToken,
+            note,
+            menuItemId,
+          }),
+        );
         saved = true;
       } catch (error) {
         if (error instanceof ApiError && error.status === 409)
@@ -501,7 +505,12 @@ export function App() {
               </section>
               <OrderDisclosure key={tableId} order={order}>
                 {order ? (
-                  <OrderPanel order={order} busy={locked} change={change} saveNote={saveNote} />
+                  <OrderPanel
+                    order={order}
+                    busy={locked}
+                    change={change}
+                    saveNote={saveNote}
+                  />
                 ) : (
                   <section className="order-panel">
                     <h2>Aktuální objednávka</h2>
@@ -563,7 +572,12 @@ export function App() {
                           .reduce<
                             Record<
                               string,
-                              { name: string; count: number; addedAt: string; note?: string }
+                              {
+                                name: string;
+                                count: number;
+                                addedAt: string;
+                                note?: string;
+                              }
                             >
                           >((groups, unit) => {
                             const key = JSON.stringify([
@@ -586,7 +600,9 @@ export function App() {
                           </strong>
                           <br />
                           <small>{time(group.addedAt)}</small>
-                          {group.note && <p className="saved-note">{group.note}</p>}
+                          {group.note && (
+                            <p className="saved-note">{group.note}</p>
+                          )}
                         </li>
                       ))}
                     </ul>

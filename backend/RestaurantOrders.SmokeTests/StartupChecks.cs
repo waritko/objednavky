@@ -4,6 +4,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using RestaurantOrders.Api.Auth;
 using RestaurantOrders.Api.Domain;
 
@@ -39,6 +41,25 @@ internal static class StartupChecks
                 throw new Exception("Restart changed existing accounts or data.");
             Console.WriteLine($"PASS startup with {(createDatabase ? "empty" : "missing")} database and restart preservation ({database.Provider})");
         }
+        // Upgrade a populated database from before notes were introduced.
+        await using var legacyDatabase = new TestDatabase(sqlServer);
+        await legacyDatabase.Initialize(migrate: false);
+        await using var legacyDb = legacyDatabase.Context();
+        await legacyDb.GetService<IMigrator>().MigrateAsync(legacyDb.Database.GetMigrations().First());
+        var legacyActor = new Account { Username = "legacy", PasswordHash = "unused" };
+        var legacyTable = new RestaurantTable { Name = "Legacy table" };
+        legacyDb.Accounts.Add(legacyActor);
+        legacyDb.Tables.Add(legacyTable);
+        await legacyDb.SaveChangesAsync();
+        var legacyId = Guid.NewGuid();
+        var legacyToken = Guid.NewGuid();
+        var legacyOpened = DateTimeOffset.UtcNow;
+        await legacyDb.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO Orders (Id, TableId, ActiveTableId, CreatedByAccountId, OpenedAt, State, ConcurrencyToken) VALUES ({legacyId}, {legacyTable.Id}, {legacyTable.Id}, {legacyActor.Id}, {legacyOpened}, {"Active"}, {legacyToken})");
+        await legacyDb.Database.MigrateAsync();
+        var preserved = await legacyDb.Orders.SingleAsync(x => x.Id == legacyId);
+        if (preserved.Note is not null || preserved.LineNotesJson != "{}" || preserved.ConcurrencyToken != legacyToken)
+            throw new Exception("Notes migration did not preserve existing orders with empty notes.");
+        Console.WriteLine($"PASS notes migration preserves existing orders ({legacyDatabase.Provider})");
     }
 
     private static async Task StartAndStop(TestDatabase database, bool proxiedHttps = false)
