@@ -259,12 +259,17 @@ test("administrator configures restaurant, then staff completes phone service fl
   const kitchenCard = page
     .locator(".order-card")
     .filter({ hasText: `Stůl ${suffix}` });
+  const deliveredKitchenLine = kitchenCard
+    .locator("li")
+    .filter({ hasText: "✓ Vydáno" });
+  await expect(deliveredKitchenLine).toContainText(`1× Káva ${suffix}`);
   await expect(
     kitchenCard.getByText("Narozeniny u stolu", { exact: true }),
   ).toBeVisible();
-  await expect(
-    kitchenCard.getByText("Bez cukru", { exact: true }),
-  ).toBeVisible();
+  await expect(kitchenCard.getByText("Bez cukru", { exact: true })).toHaveText([
+    "Bez cukru",
+    "Bez cukru",
+  ]);
   await page
     .locator(".order-card")
     .filter({ hasText: `Stůl ${suffix}` })
@@ -275,6 +280,19 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText("0 nevydaných · 2 nezaplacených", { exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: "Kuchyně", exact: true })
+    .tap();
+  await expect(kitchenCard).toBeVisible();
+  await expect(deliveredKitchenLine).toContainText(`3× Káva ${suffix}`);
+  await expect(kitchenCard.locator("li")).toHaveCount(1);
+  await page.getByLabel("Nevydané", { exact: true }).check();
+  await expect(kitchenCard).toHaveCount(0);
+  await page.getByLabel("Nevydané", { exact: true }).uncheck();
+  await expect(deliveredKitchenLine).toContainText(`3× Káva ${suffix}`);
+  await kitchenCard.getByRole("button", { name: "Otevřít účet" }).tap();
+  await disclosure.tap();
   const fullDownloadPromise = page.waitForEvent("download");
   await order.getByRole("button", { name: "Zaplatit vše", exact: true }).tap();
   const fullDownload = await fullDownloadPromise;
@@ -287,6 +305,11 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByRole("heading", { name: "Uzavřená objednávka" }),
   ).toBeVisible();
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: "Kuchyně", exact: true })
+    .tap();
+  await expect(kitchenCard).toHaveCount(0);
   await page
     .getByRole("navigation")
     .getByRole("button", { name: "Historie", exact: true })

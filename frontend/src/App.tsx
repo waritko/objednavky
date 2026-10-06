@@ -293,7 +293,6 @@ export function App() {
       ? history.orders
       : orders.filter(
           (order) =>
-            (screen !== "kitchen" || order.undeliveredCount > 0) &&
             (!undelivered || order.undeliveredCount > 0) &&
             (!unpaid || order.unpaidCount > 0),
         );
@@ -581,15 +580,14 @@ export function App() {
                     <ul>
                       {Object.values(
                         entry.units
-                          .filter(
-                            (unit) => !unit.removedAt && !unit.processedAt,
-                          )
+                          .filter((unit) => !unit.removedAt)
                           .reduce<
                             Record<
                               string,
                               {
                                 name: string;
                                 count: number;
+                                delivered: boolean;
                                 addedAt: string;
                                 note?: string;
                               }
@@ -598,10 +596,12 @@ export function App() {
                             const key = JSON.stringify([
                               unit.menuItemId,
                               unit.itemName,
+                              !!unit.processedAt,
                             ]);
                             groups[key] ??= {
                               name: unit.itemName,
                               count: 0,
+                              delivered: !!unit.processedAt,
                               addedAt: unit.addedAt,
                               note: entry.lineNotes[unit.menuItemId],
                             };
@@ -609,10 +609,13 @@ export function App() {
                             return groups;
                           }, {}),
                       ).map((group) => (
-                        <li key={group.name}>
+                        <li key={`${group.name}:${group.delivered}`}>
                           <strong>
                             {group.count}× {group.name}
                           </strong>
+                          {group.delivered && (
+                            <span className="delivered-status"> ✓ Vydáno</span>
+                          )}
                           <br />
                           <small>{time(group.addedAt)}</small>
                           {group.note && (

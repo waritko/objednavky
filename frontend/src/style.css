@@ -372,6 +372,11 @@ footer {
 .order-card li {
   margin-bottom: 12px;
 }
+.delivered-status {
+  color: #21633d;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .mobile-menu {
   display: none;
 }
