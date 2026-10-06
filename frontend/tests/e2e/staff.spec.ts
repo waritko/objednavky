@@ -81,6 +81,40 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText(`3× Káva ${suffix}`, { exact: true }),
   ).toBeVisible();
+  const line = order.locator("article:not(.removed)");
+  await expect(line.locator(".quantity")).toBeHidden();
+  await expect(
+    line.getByRole("button", {
+      name: `Odebrat řádek 3× Káva ${suffix}`,
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect((await line.boundingBox())!.height).toBeLessThan(120);
+  // Cancel the whole grouped line directly, then add it again for service.
+  await item.tap();
+  await expect(
+    order.getByText(`4× Káva ${suffix}`, { exact: true }),
+  ).toBeVisible();
+  await line
+    .getByRole("button", {
+      name: `Odebrat řádek 4× Káva ${suffix}`,
+      exact: true,
+    })
+    .tap();
+  await expect(
+    order.getByRole("heading", { name: "Uzavřená objednávka" }),
+  ).toBeVisible();
+  await expect(order.locator(".cancel-line")).toHaveCount(0);
+  await expect(order.locator(".removed")).toContainText(`4× Káva ${suffix}`);
+  await page
+    .getByRole("button", { name: "Nová objednávka", exact: true })
+    .tap();
+  await item.tap();
+  await item.tap();
+  await item.tap();
+  await expect(
+    order.getByText(`3× Káva ${suffix}`, { exact: true }),
+  ).toBeVisible();
   await page.locator(".mobile-menu summary").tap();
   await expect(
     page.getByRole("button", { name: "Odhlásit", exact: true }),
@@ -100,6 +134,7 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText(`3× Káva ${suffix}`, { exact: true }),
   ).toBeVisible();
+  await order.locator("article summary").tap();
   await order
     .getByRole("button", { name: `Vybrat další Káva ${suffix}`, exact: true })
     .tap();
@@ -110,6 +145,12 @@ test("administrator configures restaurant, then staff completes phone service fl
   const delivered = order
     .locator("article")
     .filter({ has: page.getByText(/^Vydáno · Nezaplaceno/) });
+  if (
+    !(await delivered
+      .locator("details")
+      .evaluate((details) => details.hasAttribute("open")))
+  )
+    await delivered.locator("summary").tap();
   await delivered
     .getByRole("button", { name: `Vybrat další Káva ${suffix}`, exact: true })
     .tap();
@@ -155,6 +196,7 @@ test("administrator configures restaurant, then staff completes phone service fl
   await page
     .locator(".order-card")
     .filter({ hasText: `Stůl ${suffix}` })
+    .filter({ hasText: "Celkem 168,00" })
     .getByRole("button", { name: "Zobrazit účet" })
     .tap();
   await expect(order.getByRole("button", { name: "Zaplatit vše" })).toHaveCount(
@@ -186,13 +228,13 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText("1 nevydaných · 0 nezaplacených", { exact: true }),
   ).toBeVisible();
-  await order
-    .getByRole("button", { name: `Vybrat další Káva ${suffix}`, exact: true })
-    .tap();
   page.removeAllListeners("dialog");
   page.once("dialog", (dialog) => dialog.dismiss());
   await order
-    .getByRole("button", { name: "Odebrat vybrané", exact: true })
+    .getByRole("button", {
+      name: `Odebrat řádek 1× Káva ${suffix}`,
+      exact: true,
+    })
     .tap();
   await expect(
     order.getByRole("heading", { name: "Aktuální objednávka" }),
@@ -202,7 +244,10 @@ test("administrator configures restaurant, then staff completes phone service fl
     await dialog.accept();
   });
   await order
-    .getByRole("button", { name: "Odebrat vybrané", exact: true })
+    .getByRole("button", {
+      name: `Odebrat řádek 1× Káva ${suffix}`,
+      exact: true,
+    })
     .tap();
   await expect(
     order.getByRole("heading", { name: "Uzavřená objednávka" }),

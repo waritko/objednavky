@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { groupUnits, money, time } from "./orderHelpers";
-import type { Audit, Order } from "./types";
+import type { Audit, Order, Unit } from "./types";
 
 export function OrderPanel({
   order,
@@ -31,6 +31,21 @@ export function OrderPanel({
   const amount =
     payable.reduce((sum, unit) => sum + Math.round(unit.unitPrice * 100), 0) /
     100;
+  async function cancelLine(group: Unit[]) {
+    const paidRemoval = group.some((unit) => unit.paidAt);
+    if (
+      paidRemoval &&
+      !window.confirm(
+        "Odebrat zaplacené položky? Záznam platby zůstane zachován. Vrácení platby se neprovádí.",
+      )
+    )
+      return;
+    await change(
+      "removed",
+      group.map((unit) => unit.id),
+      paidRemoval,
+    );
+  }
   async function act(action: string, all = false) {
     const target = all ? order.units.filter((unit) => !unit.removedAt) : units;
     if (
@@ -96,17 +111,29 @@ export function OrderPanel({
               key={unit.id}
               className={`unit ${unit.removedAt ? "removed" : ""}`}
             >
-              <div className="section-heading">
+              <div className="section-heading unit-heading">
                 <strong>
                   {group.length}× {unit.itemName}
                 </strong>
-                <span>{money(unit.unitPrice * group.length)}</span>
+                <span className="unit-price">
+                  {money(unit.unitPrice * group.length)}
+                </span>
+                {!closed && !unit.removedAt && (
+                  <button
+                    className="danger cancel-line"
+                    disabled={busy}
+                    aria-label={`Odebrat řádek ${group.length}× ${unit.itemName}`}
+                    onClick={() => void cancelLine(group)}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
               <p className="muted">
                 {unit.removedAt
                   ? "Odebráno"
                   : `${unit.processedAt ? "Vydáno" : "Nevydáno"} · ${unit.paidAt ? "Zaplaceno" : "Nezaplaceno"}`}{" "}
-                · {time(unit.addedAt)}
+                <span className="unit-added-time"> · {time(unit.addedAt)}</span>
               </p>
               {!closed && !unit.removedAt && (
                 <div className="quantity" aria-label={`Výběr ${unit.itemName}`}>
@@ -130,7 +157,14 @@ export function OrderPanel({
                 </div>
               )}
               <details>
-                <summary>Jednotlivé kusy a časy</summary>
+                <summary>
+                  <span className="desktop-unit-summary">
+                    Jednotlivé kusy a časy
+                  </span>
+                  <span className="mobile-unit-summary">
+                    Podrobnosti a výběr
+                  </span>
+                </summary>
                 {group.map((unit, index) => (
                   <div key={unit.id} className="unit-detail">
                     {!closed && !unit.removedAt ? (
