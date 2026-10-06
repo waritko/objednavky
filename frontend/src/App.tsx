@@ -5,6 +5,7 @@ import type { Account, Catalog, Order } from "./types";
 import { OrderPanel } from "./OrderPanel";
 import { OrderDisclosure } from "./OrderDisclosure";
 import { Admin } from "./Admin";
+import { downloadCheckoutCsv } from "./checkoutCsv";
 
 type Screen = "tables" | "active" | "kitchen" | "history" | "order" | "admin";
 type Tap = { tableId: string; menuItemId: string; unitId: string };
@@ -169,14 +170,14 @@ export function App() {
     if (!order) return;
     await run(async () => {
       try {
-        setOrder(
-          await api<Order>(`/orders/${order.id}/${action}`, {
-            concurrencyToken: order.concurrencyToken,
-            unitIds: ids,
-            all: ids === null,
-            confirmPaidRemoval,
-          }),
-        );
+        const updated = await api<Order>(`/orders/${order.id}/${action}`, {
+          concurrencyToken: order.concurrencyToken,
+          unitIds: ids,
+          all: ids === null,
+          confirmPaidRemoval,
+        });
+        setOrder(updated);
+        if (action === "paid") downloadCheckoutCsv(order, updated);
       } catch (error) {
         if (error instanceof ApiError && error.status === 409)
           setOrder(await api<Order>(`/orders/${order.id}`));

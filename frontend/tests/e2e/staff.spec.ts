@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 test("administrator configures restaurant, then staff completes phone service flow", async ({
   page,
@@ -200,9 +201,35 @@ test("administrator configures restaurant, then staff completes phone service fl
   await delivered
     .getByRole("button", { name: `Vybrat další Káva ${suffix}`, exact: true })
     .tap();
+  const downloads: string[] = [];
+  page.on("download", (download) =>
+    downloads.push(download.suggestedFilename()),
+  );
+  await page.route("**/orders/*/paid", (route) =>
+    route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "Platba selhala." }),
+    }),
+  );
   await order
     .getByRole("button", { name: "Zaplatit vybrané", exact: true })
     .tap();
+  await expect(page.getByRole("alert")).toContainText("Platba selhala.");
+  expect(downloads).toEqual([]);
+  await page.unroute("**/orders/*/paid");
+  const partialDownloadPromise = page.waitForEvent("download");
+  await order
+    .getByRole("button", { name: "Zaplatit vybrané", exact: true })
+    .tap();
+  const partialDownload = await partialDownloadPromise;
+  expect(partialDownload.suggestedFilename()).toMatch(/^checkout-.*\.csv$/);
+  const partialCsv = await readFile((await partialDownload.path())!, "utf8");
+  expect(partialCsv).toMatch(
+    new RegExp(
+      `^\\uFEFFproduct_id,product_name,quantity\\r\\n"[0-9a-f-]{36}","Káva ${suffix}",1\\r\\n$`,
+    ),
+  );
   await expect(
     order.getByText("2 nevydaných · 2 nezaplacených", { exact: true }),
   ).toBeVisible();
@@ -241,7 +268,15 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText("0 nevydaných · 2 nezaplacených", { exact: true }),
   ).toBeVisible();
+  const fullDownloadPromise = page.waitForEvent("download");
   await order.getByRole("button", { name: "Zaplatit vše", exact: true }).tap();
+  const fullDownload = await fullDownloadPromise;
+  const fullCsv = await readFile((await fullDownload.path())!, "utf8");
+  expect(fullCsv).toBe(partialCsv.replace(/,1\r\n$/, ",2\r\n"));
+  expect(fullDownload.suggestedFilename()).not.toBe(
+    partialDownload.suggestedFilename(),
+  );
+  expect(downloads).toHaveLength(2);
   await expect(
     order.getByRole("heading", { name: "Uzavřená objednávka" }),
   ).toBeVisible();

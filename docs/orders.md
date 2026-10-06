@@ -13,6 +13,15 @@ All endpoints require a signed-in account; writes also require `X-CSRF-TOKEN`.
 
 Responses include `id`, `tableId`, `state` (`Active`/`Closed`), `concurrencyToken`, opened/closed timestamps, `total`, `paid`, `unpaid`, outstanding counts and individual `units`. Unit records include snapshot names/prices and account IDs/timestamps for addition, payment, delivery and removal. Totals exclude removed units. Removal preserves payment and creates no refund.
 
+After a successful payment in the staff interface, the browser automatically downloads
+`checkout-{order ID}-{concurrency token}.csv`. This works for both selected-unit and
+whole-table payments, even when payment does not yet close the order. The UTF-8 CSV
+(with BOM, comma separators and CRLF records) has `product_id,product_name,quantity`
+columns. Product ID is the catalog item's UUID (`menuItemId`); product name is the
+saved order-unit name. Quantities count only units newly paid by that action,
+grouped by product ID and saved name. Already paid and removed units are excluded.
+Cancelled or rejected payments produce no download.
+
 Use the latest concurrency token for status changes. A stale token or concurrent database write returns 409 `order_conflict`; reload before offering the action again. An uncertain addition may safely retry the same unit ID. Repeated status actions with a fresh token affect only eligible units. Closed orders reject edits with 409 `order_closed`. Errors include Czech `message` text. Selecting a foreign unit rejects the entire action.
 
 Writes use serializable database transactions, a unique active-table index and optimistic order tokens. Each real unit change writes an audit event in the same transaction. When every non-removed unit is paid and delivered (including removal of the final unit), the order closes and releases its table. Disabled tables/items/categories/subcategories cannot receive additions; existing units remain serviceable.
