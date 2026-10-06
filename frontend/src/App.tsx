@@ -3,6 +3,7 @@ import { api, ApiError, csrf } from "./api";
 import { money, time } from "./orderHelpers";
 import type { Account, Catalog, Order } from "./types";
 import { OrderPanel } from "./OrderPanel";
+import { OrderDisclosure } from "./OrderDisclosure";
 import { Admin } from "./Admin";
 
 type Screen = "tables" | "active" | "kitchen" | "history" | "order" | "admin";
@@ -480,15 +481,19 @@ export function App() {
                   </>
                 )}
               </section>
-              {order ? (
-                <OrderPanel order={order} busy={locked} change={change} />
-              ) : (
-                <section className="order-panel">
-                  <h2>Aktuální objednávka</h2>
-                  <p>Zatím prázdná. Klepnutím na položku přidáte jeden kus.</p>
-                  <strong>{money(0)}</strong>
-                </section>
-              )}
+              <OrderDisclosure key={tableId} order={order}>
+                {order ? (
+                  <OrderPanel order={order} busy={locked} change={change} />
+                ) : (
+                  <section className="order-panel">
+                    <h2>Aktuální objednávka</h2>
+                    <p>
+                      Zatím prázdná. Klepnutím na položku přidáte jeden kus.
+                    </p>
+                    <strong>{money(0)}</strong>
+                  </section>
+                )}
+              </OrderDisclosure>
             </div>
           </>
         )}

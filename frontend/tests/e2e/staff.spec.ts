@@ -74,10 +74,27 @@ test("administrator configures restaurant, then staff completes phone service fl
   const item = page.getByRole("button", {
     name: new RegExp(`Káva ${suffix}.*56`),
   });
+  const disclosure = page.getByRole("button", { name: /^Objednané položky/ });
+  await expect(disclosure).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".order-panel")).toBeHidden();
   await item.tap();
   await item.tap();
   await item.tap();
   const order = page.getByRole("region", { name: "Aktuální objednávka" });
+  await expect(disclosure).toContainText("3 ks · 168,00");
+  await expect(page.locator(".order-panel")).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(disclosure).toBeHidden();
+  await expect(order).toBeVisible();
+  await page.setViewportSize(phoneViewport);
+  await expect(page.locator(".order-panel")).toBeHidden();
+  await disclosure.tap();
+  await expect(disclosure).toHaveAttribute("aria-expanded", "true");
+  await expect(order).toBeVisible();
+  await disclosure.tap();
+  await expect(page.locator(".order-panel")).toBeHidden();
+  await expect(item).toBeVisible();
+  await disclosure.tap();
   await expect(
     order.getByText(`3× Káva ${suffix}`, { exact: true }),
   ).toBeVisible();
@@ -131,6 +148,8 @@ test("administrator configures restaurant, then staff completes phone service fl
   await page
     .getByRole("button", { name: new RegExp(`Otevřený účet Stůl ${suffix}`) })
     .tap();
+  await expect(disclosure).toHaveAttribute("aria-expanded", "false");
+  await disclosure.tap();
   await expect(
     order.getByText(`3× Káva ${suffix}`, { exact: true }),
   ).toBeVisible();
@@ -181,6 +200,7 @@ test("administrator configures restaurant, then staff completes phone service fl
     .filter({ hasText: `Stůl ${suffix}` })
     .getByRole("button", { name: "Otevřít účet" })
     .tap();
+  await disclosure.tap();
   await order.getByRole("button", { name: "Vydat vše", exact: true }).tap();
   await expect(
     order.getByText("0 nevydaných · 2 nezaplacených", { exact: true }),
@@ -199,6 +219,7 @@ test("administrator configures restaurant, then staff completes phone service fl
     .filter({ hasText: "Celkem 168,00" })
     .getByRole("button", { name: "Zobrazit účet" })
     .tap();
+  await disclosure.tap();
   await expect(order.getByRole("button", { name: "Zaplatit vše" })).toHaveCount(
     0,
   );

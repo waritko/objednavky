@@ -181,6 +181,13 @@ small {
   align-items: start;
   margin-top: 24px;
 }
+.order-disclosure,
+.order-disclosure-content {
+  display: contents;
+}
+.order-disclosure-toggle {
+  display: none;
+}
 .tabs,
 .actions,
 .filters {
@@ -384,9 +391,30 @@ footer {
   .ordering-layout > section {
     width: 100%;
   }
-  .ordering-layout > section:first-child {
-    max-height: 43vh;
-    overflow-y: auto;
+  .order-disclosure {
+    display: block;
+    order: -1;
+    width: 100%;
+  }
+  .order-disclosure-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+  }
+  .order-disclosure-total {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .order-disclosure-content {
+    display: none;
+  }
+  .order-disclosure-content.expanded {
+    display: block;
+    margin-top: 8px;
   }
   .ordering-layout .tabs {
     gap: 4px;
