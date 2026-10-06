@@ -16,6 +16,21 @@ a fresh `artifacts/publish-<id>` directory, retained for inspection; old publish
 directories can be removed when no longer needed. A successful build replaces
 the ZIP. Existing `artifacts/api` deployments and their data are left intact.
 
+By default, the script then copies the contents of the publish directory (rather
+than the ZIP or its enclosing directory) via SCP to
+`waritko@mrazitko.varak.net:/home/waritko/objednavky-run`. The remote directory must
+already exist and be writable. OpenSSH `scp` must be on PATH; authentication and
+host verification use your SSH configuration. The copy overwrites matching files,
+retains other remote files, and does not restart the application. A failed copy
+fails the script while retaining the local publish directory and ZIP.
+
+Configure the destination, SSH port, or private key, or skip copying:
+
+```powershell
+./scripts/build.ps1 -ScpDestination 'user@host:/srv/restaurant' -ScpPort 2222 -ScpIdentityFile "$env:USERPROFILE/.ssh/id_ed25519"
+./scripts/build.ps1 -SkipScp
+```
+
 Extract the ZIP into a clean release directory. It includes `wwwroot` with the
 React application; the API serves the UI and JSON endpoints from one origin.
 This framework-dependent package works on Windows and Linux. Install a current

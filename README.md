@@ -42,7 +42,10 @@ Open the Vite URL and sign in. In **Správa**, configure tables/menu and create 
 ## Build a deployment ZIP
 
 Run `./scripts/build.ps1` in PowerShell to build the frontend, publish the API,
-and create `artifacts/restaurant-orders-app.zip`. On Linux, use PowerShell 7:
+and create `artifacts/restaurant-orders-app.zip`. It also copies the unpacked
+published files via SCP to `waritko@mrazitko.varak.net:/home/waritko/objednavky-run`.
+Use `-ScpDestination 'user@host:/path'` to change the destination or `-SkipScp`
+for a local build. On Linux, use PowerShell 7:
 `pwsh -File scripts/build.ps1`.
 
 Extract the ZIP and use `run.cmd` on Windows or `bash run.sh` on Linux.
