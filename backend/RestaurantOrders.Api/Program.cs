@@ -73,12 +73,11 @@ builder.Services.AddAntiforgery(options =>
 });
 var app = builder.Build();
 app.UseExceptionHandler();
-if (args.Contains("--migrate"))
+await using (var scope = app.Services.CreateAsyncScope())
 {
-    await using var scope = app.Services.CreateAsyncScope();
     await scope.ServiceProvider.GetRequiredService<RestaurantDbContext>().Database.MigrateAsync();
-    return;
 }
+if (args.Contains("--migrate")) return;
 if (args.Contains("--bootstrap-admin"))
 {
     await AuthEndpoints.BootstrapAdministratorAsync(app);

@@ -9,11 +9,15 @@ From the repository root:
 
 ```powershell
 dotnet restore backend/RestaurantOrders.Api/RestaurantOrders.Api.csproj
-dotnet run --project backend/RestaurantOrders.Api -- --migrate
 dotnet run --project backend/RestaurantOrders.Api
 ```
 
-For SQL Server, set the two environment variables first, then run:
+Startup creates a missing database, applies pending provider-specific migrations,
+and initializes default accounts when the accounts table is empty. Existing data
+and accounts are preserved. This also applies before `--bootstrap-admin`.
+
+For SQL Server, set the two environment variables first. To apply migrations and
+exit without starting the server or creating default accounts, run:
 
 ```powershell
 dotnet run --project backend/RestaurantOrders.Api -- --migrate

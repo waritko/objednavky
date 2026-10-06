@@ -14,7 +14,7 @@ internal sealed class TestDatabase(bool sqlServer) : IAsyncDisposable
         ? new SqlServerRestaurantDbContext(new DbContextOptionsBuilder<SqlServerRestaurantDbContext>().UseSqlServer(Connection).Options)
         : new SqliteRestaurantDbContext(new DbContextOptionsBuilder<SqliteRestaurantDbContext>().UseSqlite(Connection).Options);
 
-    public async Task Initialize()
+    public async Task Initialize(bool migrate = true, bool createDatabase = true)
     {
         if (sqlServer)
         {
@@ -26,7 +26,7 @@ internal sealed class TestDatabase(bool sqlServer) : IAsyncDisposable
             await using var create = master.CreateCommand();
             // Name is generated here, never accepted from configuration. No existing database is migrated or deleted.
             create.CommandText = $"CREATE DATABASE [{name}]";
-            await create.ExecuteNonQueryAsync();
+            if (createDatabase) await create.ExecuteNonQueryAsync();
             builder.InitialCatalog = name;
             Connection = builder.ConnectionString;
             created = true;
@@ -36,7 +36,13 @@ internal sealed class TestDatabase(bool sqlServer) : IAsyncDisposable
         }
         else { Connection = $"Data Source={path}"; created = true; }
         await using var db = Context();
-        await db.Database.MigrateAsync();
+        if (migrate) await db.Database.MigrateAsync();
+        else if (createDatabase && !sqlServer)
+        {
+            await db.Database.OpenConnectionAsync();
+            await db.Database.CloseConnectionAsync();
+        }
+        if (!migrate) return;
         if (!sqlServer)
         {
             await db.Database.OpenConnectionAsync();

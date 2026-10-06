@@ -68,13 +68,24 @@ dotnet RestaurantOrders.Api.dll --bootstrap-admin
 dotnet RestaurantOrders.Api.dll
 ```
 
-Migrate before bootstrap. Bootstrap credentials must come from the environment/secret manager and are not command-line arguments. Neither migration nor bootstrap happens automatically at web startup. The `--migrate` command uses the configured provider and connection string, unlike design-time migration-generation factories.
+Startup creates a missing database and applies pending migrations before initializing
+default accounts. Both `--bootstrap-admin` and `--migrate` also apply migrations;
+`--migrate` exits without creating accounts. The explicit migration step above is
+optional. Bootstrap credentials must come from the environment/secret manager and
+are not command-line arguments. Custom administrator bootstrap remains an explicit
+command. Migrations use the configured provider and connection string, unlike
+design-time migration-generation factories.
 
 ## SQL Server
 
 SQL Server **2022** is the tested version. Create a dedicated database and application login, set `Database__Provider=SqlServer`, and configure a connection string with TLS validation, for example `Server=sql.example;Database=RestaurantOrders;User Id=restaurant;Password=<from secret store>;Encrypt=True;TrustServerCertificate=False`. Windows integrated authentication is also supported where configured.
 
-Run the same `--migrate` command using a deployment identity with schema permissions. The normal service identity needs application data access, not permission to create/drop databases. Provider-specific migrations live under `Persistence/Migrations/Sqlite` and `SqlServer`; never apply one provider's SQL to the other.
+Startup applies pending migrations, so the service identity needs schema permissions
+when migrations are pending and database creation permission if the database does
+not exist. Alternatively, provision the database and run `--migrate` using a deployment
+identity before starting with an application data access identity. Provider-specific
+migrations live under `Persistence/Migrations/Sqlite` and `SqlServer`; never apply
+one provider's SQL to the other.
 
 SQL Server's usual case-insensitive collation treats code variants as duplicates; SQLite allows case-distinct catalog codes. CSV import always matches codes ignoring case and rejects ambiguity. Use one consistent spelling for stable item/category codes.
 

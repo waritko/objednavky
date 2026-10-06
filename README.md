@@ -25,7 +25,6 @@ To run the same steps manually:
 
 ```powershell
 dotnet restore backend/RestaurantOrders.SmokeTests
-dotnet run --project backend/RestaurantOrders.Api -- --migrate
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
 dotnet run --no-launch-profile --project backend/RestaurantOrders.Api --urls http://127.0.0.1:5080
 ```
@@ -37,6 +36,7 @@ npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
+The API creates a missing database and applies pending migrations at startup.
 Open the Vite URL and sign in. In **Správa**, configure tables/menu and create operational accounts. The bootstrap command refuses to overwrite existing accounts.
 
 ## Build a deployment ZIP

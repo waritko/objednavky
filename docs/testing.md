@@ -9,7 +9,13 @@ npm --prefix frontend test
 npm --prefix frontend run test:e2e
 ```
 
-The executable backend suite runs real HTTP requests against a fresh migrated database. It covers authentication, authorization, catalog validation, CSV parsing/import, saved order snapshots, partial delivery/payment, corrections, closure, history, audit and concurrent devices. It fails on a nonzero exit code; `dotnet test` does not run this executable.
+The executable backend suite verifies actual API startup with missing and empty
+databases, automatic migrations/default accounts, preservation of changed credentials
+and data on restart, and administrator bootstrap without prior migration.
+It also runs real HTTP requests covering authentication, authorization, catalog
+validation, CSV parsing/import, saved order snapshots, partial delivery/payment,
+corrections, closure, history, audit and concurrent devices. It fails on a nonzero
+exit code; `dotnet test` does not run this executable.
 
 SQL Server tests require Docker with Linux containers and at least 2 GB available memory. The runner starts a disposable SQL Server 2022 Developer container with a random password and loopback-only ephemeral port, runs the same suite, then removes the container even on failure. The image is pinned by digest in `scripts/sqlserver-image.txt`. No database or credentials from application configuration are used. With Release builds, set `BUILD_CONFIGURATION=Release`.
 

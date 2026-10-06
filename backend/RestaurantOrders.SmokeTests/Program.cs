@@ -5,10 +5,11 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using RestaurantOrders.Api.Persistence;
 
+await StartupChecks.Run(args.Contains("--sqlserver"));
 await DefaultAccountChecks.Run(args.Contains("--sqlserver"));
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
 await using var database = new TestDatabase(args.Contains("--sqlserver"));
-await database.Initialize();
+await database.Initialize(migrate: false);
 var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent!.Name;
 var api = Path.Combine(root, $"RestaurantOrders.Api/bin/{configuration}/net10.0/RestaurantOrders.Api.dll");
 var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
