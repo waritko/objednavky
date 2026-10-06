@@ -70,6 +70,26 @@ public sealed class AccountService(RestaurantDbContext db, IPasswordHasher<Accou
         return Results.Ok(AccountView.From(account));
     }
 
+    public async Task InitializeDefaultsAsync(CancellationToken ct = default)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        if (await db.Accounts.AnyAsync(ct)) return;
+
+        foreach (var (username, password, role) in new[]
+        {
+            ("jana", "Lucie", AccountRole.Administrator),
+            ("monami", "Kava", AccountRole.Operational)
+        })
+        {
+            var account = new Account { Username = username, PasswordHash = "", Role = role };
+            account.PasswordHash = hasher.HashPassword(account, password);
+            db.Accounts.Add(account);
+        }
+
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+    }
+
     public async Task BootstrapAsync(string? username, string? password)
     {
         if (await db.Accounts.AnyAsync()) throw new InvalidOperationException("Bootstrap requires an empty accounts table.");

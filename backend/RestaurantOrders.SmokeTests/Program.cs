@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using RestaurantOrders.Api.Persistence;
 
+await DefaultAccountChecks.Run(args.Contains("--sqlserver"));
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
 await using var database = new TestDatabase(args.Contains("--sqlserver"));
 await database.Initialize();

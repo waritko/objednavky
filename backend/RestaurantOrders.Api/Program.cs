@@ -84,6 +84,10 @@ if (args.Contains("--bootstrap-admin"))
     await AuthEndpoints.BootstrapAdministratorAsync(app);
     return;
 }
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    await scope.ServiceProvider.GetRequiredService<AccountService>().InitializeDefaultsAsync();
+}
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.Use(async (context, next) =>

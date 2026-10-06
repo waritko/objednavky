@@ -25,7 +25,9 @@ for building.
 Run `run.cmd` on Windows or `bash run.sh` on Linux. Both launchers select the
 release directory as their working directory, preserve environment configuration,
 and forward arguments. For first-time setup, configure the database and bootstrap
-credentials as described below, then run:
+credentials as described below, then run. The administrator creation step is
+optional: without it, first startup on an empty accounts table creates `jana`
+(administrator, password `Lucie`) and `monami` (standard, password `Kava`).
 
 | Action | Windows | Linux |
 | --- | --- | --- |

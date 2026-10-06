@@ -1,7 +1,15 @@
 # Accounts and sessions
 
 Apply the database migration before starting the API (see `backend/README.md`).
-Create the first administrator by setting `Bootstrap__Username` and
+On normal API startup, an empty accounts table receives two enabled defaults:
+administrator `jana` with password `Lucie`, and standard (`Operational`) account
+`monami` with password `Kava`. Passwords are stored as salted hashes. Startup
+leaves populated accounts tables unchanged, including changed passwords and
+disabled accounts. The short default passwords are an initialization exception;
+account creation and password changes through the API still require 12–256 characters.
+
+Alternatively, before the first normal startup, create a custom administrator
+instead of the defaults by setting `Bootstrap__Username` and
 `Bootstrap__Password` through environment variables or local user secrets, then run:
 
 ```powershell
