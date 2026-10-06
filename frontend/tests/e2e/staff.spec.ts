@@ -65,6 +65,9 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(page.locator("header")).toBeVisible();
   await expect(page.getByRole("navigation")).toBeVisible();
   await expect(page.locator(".mobile-menu")).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Prodeje", exact: true }),
+  ).toHaveCount(0);
   await page.setViewportSize(phoneViewport);
   await expect(
     page.getByRole("button", { name: "Správa", exact: true }),
@@ -354,5 +357,32 @@ test("administrator configures restaurant, then staff completes phone service fl
     order.getByRole("heading", { name: "Uzavřená objednávka" }),
   ).toBeVisible();
   await expect(order.locator(".removed")).toContainText("Odebráno");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole("button", { name: "Odhlásit", exact: true }).click();
+  await page.getByLabel("Uživatelské jméno", { exact: true }).fill("admin");
+  await page
+    .getByLabel("Heslo", { exact: true })
+    .fill("Browser-test-password-123");
+  await page.getByRole("button", { name: "Přihlásit se", exact: true }).click();
+  await page.getByRole("button", { name: "Prodeje", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Denní prodeje" }),
+  ).toBeVisible();
+  const dayButtons = page.locator('[aria-label="Den prodeje"] button');
+  await expect(dayButtons).toHaveCount(7);
+  const soldRow = page.getByRole("row").filter({ hasText: `Káva ${suffix}` });
+  await expect(soldRow).toContainText("4 ks");
+  await expect(soldRow).toContainText("224,00");
+  await dayButtons.last().click();
+  await expect(
+    page.getByText("V tento den nebyly zaplaceny žádné položky."),
+  ).toBeVisible();
+  await dayButtons.first().click();
+  await page.setViewportSize(phoneViewport);
+  await expect(soldRow).toBeVisible();
+  await page
+    .getByRole("button", { name: "Obnovit prodeje", exact: true })
+    .click();
+  await expect(soldRow).toContainText("4 ks");
   expect(errors).toEqual([]);
 });

@@ -27,3 +27,17 @@ Cancelled or rejected payments produce no download.
 Use the latest concurrency token for status changes. A stale token or concurrent database write returns 409 `order_conflict`; reload before offering the action again. An uncertain addition may safely retry the same unit ID. Repeated status actions with a fresh token affect only eligible units. Closed orders reject edits with 409 `order_closed`. Errors include Czech `message` text. Selecting a foreign unit rejects the entire action.
 
 Writes use serializable database transactions, a unique active-table index and optimistic order tokens. Each real unit change writes an audit event in the same transaction. When every non-removed unit is paid and delivered (including removal of the final unit), the order closes and releases its table. Disabled tables/items/categories/subcategories cannot receive additions; existing units remain serviceable.
+
+## Daily sales (administrator only)
+
+`GET /orders/sales` returns seven calendar days, newest first: today and the
+previous six days in `Europe/Prague`. Each day contains `date`, `quantity`,
+`total`, and `items` (`menuItemId`, historical `itemName`, `quantity`, `total`).
+Days with no payments are included with zero totals and an empty item list.
+
+Sales are assigned to the payment date (`PaidAt`), including paid units from
+active and closed orders. Unpaid units are excluded. Paid units subsequently
+removed remain included because removal does not refund their payment.
+Totals use the saved unit prices, including VAT, rather than current menu prices.
+The UI is available to administrators through **Prodeje**, with daily selection
+and a refresh button. Anonymous requests receive 401; operational accounts receive 403.

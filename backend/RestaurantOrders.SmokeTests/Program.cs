@@ -95,6 +95,7 @@ try
     await CatalogChecks.Run(admin, staff, anonymous);
     await ImportChecks.Run(admin, staff, anonymous, Path.Combine(root, "../ciselnik.csv"));
     await OrderChecks.Run(admin, staff, anonymous);
+    await SalesChecks.Run(admin, staff, anonymous, database);
     await ConcurrencyChecks.Run(admin, staff);
     await Check(await admin.PutAsJsonAsync($"/accounts/{id}", new { username = "waiter", password = "Changed-password-123", role = "Operational", enabled = true }), 200, "password reset");
     await Check(await staff.GetAsync("/auth/me"), 401, "password reset revokes session");

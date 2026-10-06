@@ -10,6 +10,9 @@ public static class OrderEndpoints
     public static void MapOrderEndpoints(this WebApplication app)
     {
         var orders = app.MapGroup("/orders").RequireAuthorization();
+        orders.MapGet("/sales", (RestaurantDbContext db, CancellationToken ct) =>
+            SalesReports.Read(db, DateTimeOffset.UtcNow, ct))
+            .RequireAuthorization(p => p.RequireRole("Administrator"));
         orders.MapGet("", async (bool? undelivered, bool? unpaid, RestaurantDbContext db, CancellationToken ct) =>
         {
             var query = db.Orders.AsNoTracking().Where(x => x.State == OrderState.Active);

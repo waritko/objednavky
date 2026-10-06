@@ -5,9 +5,11 @@ import type { Account, Catalog, Order } from "./types";
 import { OrderPanel } from "./OrderPanel";
 import { OrderDisclosure } from "./OrderDisclosure";
 import { Admin } from "./Admin";
+import { Sales } from "./Sales";
 import { downloadCheckoutCsv } from "./checkoutCsv";
 
-type Screen = "tables" | "active" | "kitchen" | "history" | "order" | "admin";
+type Screen =
+  "tables" | "active" | "kitchen" | "history" | "order" | "admin" | "sales";
 type Tap = { tableId: string; menuItemId: string; unitId: string };
 const emptyCatalog: Catalog = {
   tables: [],
@@ -83,7 +85,7 @@ export function App() {
     }
   }, [account, refresh]);
   useEffect(() => {
-    if (!account || locked || screen === "admin") return;
+    if (!account || locked || screen === "admin" || screen === "sales") return;
     const timer = window.setInterval(() => {
       void refresh().catch((error) => setError(error.message));
       if (screen === "order" && order)
@@ -320,7 +322,12 @@ export function App() {
           ["active", "Objednávky"],
           ["kitchen", "Kuchyně"],
           ["history", "Historie"],
-          ...(account.role === "Administrator" ? [["admin", "Správa"]] : []),
+          ...(account.role === "Administrator"
+            ? [
+                ["admin", "Správa"],
+                ["sales", "Prodeje"],
+              ]
+            : []),
         ] as [Screen, string][]
       ).map(([key, label]) => (
         <button
@@ -653,6 +660,7 @@ export function App() {
             )}
           </>
         )}
+        {screen === "sales" && account.role === "Administrator" && <Sales />}
         {screen === "admin" && account.role === "Administrator" && (
           <Admin catalog={catalog} refresh={refresh} />
         )}
