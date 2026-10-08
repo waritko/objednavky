@@ -168,28 +168,32 @@ export function App() {
     action: string,
     ids: string[] | null,
     confirmPaidRemoval = false,
+    target: Order | null = order,
   ) {
-    if (!order) return;
+    if (!target) return;
     await run(async () => {
       try {
-        const updated = await api<Order>(`/orders/${order.id}/${action}`, {
-          concurrencyToken: order.concurrencyToken,
+        const updated = await api<Order>(`/orders/${target.id}/${action}`, {
+          concurrencyToken: target.concurrencyToken,
           unitIds: ids,
           all: ids === null,
           confirmPaidRemoval,
         });
-        setOrder(updated);
+        if (order?.id === target.id) setOrder(updated);
         if (action === "paid")
           downloadCheckoutCsv(
-            order,
+            target,
             updated,
             catalog.items,
             catalog.tables.find((table) => table.id === updated.tableId)
               ?.name || "Stůl",
           );
       } catch (error) {
-        if (error instanceof ApiError && error.status === 409)
-          setOrder(await api<Order>(`/orders/${order.id}`));
+        if (error instanceof ApiError && error.status === 409) {
+          const latest = await api<Order>(`/orders/${target.id}`);
+          if (order?.id === target.id) setOrder(latest);
+          await refresh();
+        }
         throw error;
       }
       await refresh();
@@ -587,6 +591,7 @@ export function App() {
                               {
                                 name: string;
                                 count: number;
+                                unitIds: string[];
                                 delivered: boolean;
                                 addedAt: string;
                                 note?: string;
@@ -601,22 +606,49 @@ export function App() {
                             groups[key] ??= {
                               name: unit.itemName,
                               count: 0,
+                              unitIds: [],
                               delivered: !!unit.processedAt,
                               addedAt: unit.addedAt,
                               note: entry.lineNotes[unit.menuItemId],
                             };
                             groups[key].count++;
+                            groups[key].unitIds.push(unit.id);
                             return groups;
                           }, {}),
                       ).map((group) => (
-                        <li key={`${group.name}:${group.delivered}`}>
-                          <strong>
-                            {group.count}× {group.name}
-                          </strong>
-                          {group.delivered && (
-                            <span className="delivered-status"> ✓ Vydáno</span>
-                          )}
-                          <br />
+                        <li
+                          key={group.unitIds[0]}
+                          className={
+                            group.delivered ? "delivered-line" : undefined
+                          }
+                        >
+                          <div className="section-heading">
+                            <strong>
+                              {group.count}× {group.name}
+                            </strong>
+                            {group.delivered && (
+                              <span className="delivered-status">
+                                {" "}
+                                ✓ Vydáno
+                              </span>
+                            )}
+                            {!group.delivered && (
+                              <button
+                                disabled={locked}
+                                aria-label={`Vydat řádek ${group.count}× ${group.name}`}
+                                onClick={() =>
+                                  void change(
+                                    "processed",
+                                    group.unitIds,
+                                    false,
+                                    entry,
+                                  )
+                                }
+                              >
+                                ✓
+                              </button>
+                            )}
+                          </div>
                           <small>{time(group.addedAt)}</small>
                           {group.note && (
                             <p className="saved-note">{group.note}</p>

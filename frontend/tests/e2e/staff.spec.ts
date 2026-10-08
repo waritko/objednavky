@@ -263,6 +263,7 @@ test("administrator configures restaurant, then staff completes phone service fl
     .locator("li")
     .filter({ hasText: "✓ Vydáno" });
   await expect(deliveredKitchenLine).toContainText(`1× Káva ${suffix}`);
+  await expect(deliveredKitchenLine.getByRole("button")).toHaveCount(0);
   await expect(
     kitchenCard.getByText("Narozeniny u stolu", { exact: true }),
   ).toBeVisible();
@@ -270,20 +271,16 @@ test("administrator configures restaurant, then staff completes phone service fl
     "Bez cukru",
     "Bez cukru",
   ]);
-  await page
-    .locator(".order-card")
-    .filter({ hasText: `Stůl ${suffix}` })
-    .getByRole("button", { name: "Otevřít účet" })
-    .tap();
-  await disclosure.tap();
-  await order.getByRole("button", { name: "Vydat vše", exact: true }).tap();
+  const deliverLine = kitchenCard.getByRole("button", {
+    name: `Vydat řádek 2× Káva ${suffix}`,
+    exact: true,
+  });
+  await expect(deliverLine).toHaveText("✓");
+  await deliverLine.tap();
   await expect(
-    order.getByText("0 nevydaných · 2 nezaplacených", { exact: true }),
+    page.getByRole("heading", { name: "Kuchyně", exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("navigation")
-    .getByRole("button", { name: "Kuchyně", exact: true })
-    .tap();
+  await expect(deliverLine).toHaveCount(0);
   await expect(kitchenCard).toBeVisible();
   await expect(deliveredKitchenLine).toContainText(`3× Káva ${suffix}`);
   await expect(kitchenCard.locator("li")).toHaveCount(1);
@@ -293,6 +290,9 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(deliveredKitchenLine).toContainText(`3× Káva ${suffix}`);
   await kitchenCard.getByRole("button", { name: "Otevřít účet" }).tap();
   await disclosure.tap();
+  await expect(
+    order.getByText("0 nevydaných · 2 nezaplacených", { exact: true }),
+  ).toBeVisible();
   const fullDownloadPromise = page.waitForEvent("download");
   await order.getByRole("button", { name: "Zaplatit vše", exact: true }).tap();
   const fullDownload = await fullDownloadPromise;

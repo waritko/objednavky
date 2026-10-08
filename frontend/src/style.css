@@ -157,7 +157,7 @@ small {
   font-size: 27px;
 }
 .table-tile.occupied {
-  background: #e7ede1;
+  background: #d6e2cd;
   border-color: #8aab8e;
 }
 .badge {
@@ -371,6 +371,11 @@ footer {
 }
 .order-card li {
   margin-bottom: 12px;
+}
+.order-card .delivered-line {
+  background: #e6f2e9;
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 .delivered-status {
   color: #21633d;
