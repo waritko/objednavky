@@ -29,8 +29,19 @@ public static class OrderEndpoints
             var query = db.Orders.AsNoTracking().Where(x => x.State == OrderState.Closed);
             if (tableId.HasValue) query = query.Where(x => x.TableId == tableId.Value);
             var total = await query.CountAsync(ct);
-            var rows = await query.OrderBy(x => x.Id).Skip((number - 1) * size).Take(size).Include(x => x.Units).ToListAsync(ct);
-            return Results.Ok(new { page = number, pageSize = size, total, orders = rows.Select(OrderService.View) });
+            // Sort timestamps in memory because SQLite cannot order DateTimeOffset values.
+            // Load only payment dates for sorting, then fetch the requested page's full orders.
+            var dates = await query.Select(x => new
+            {
+                x.Id,
+                x.ClosedAt,
+                PaidAt = x.Units.Select(u => u.PaidAt).ToList()
+            }).ToListAsync(ct);
+            var ids = dates.OrderByDescending(x => x.PaidAt.Max())
+                .ThenByDescending(x => x.ClosedAt).ThenBy(x => x.Id)
+                .Skip((number - 1) * size).Take(size).Select(x => x.Id).ToArray();
+            var rows = await query.Where(x => ids.Contains(x.Id)).Include(x => x.Units).ToDictionaryAsync(x => x.Id, ct);
+            return Results.Ok(new { page = number, pageSize = size, total, orders = ids.Select(id => OrderService.View(rows[id])) });
         });
         orders.MapGet("/{id:guid}/audit", async (Guid id, RestaurantDbContext db, CancellationToken ct) =>
         {
