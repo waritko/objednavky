@@ -1,9 +1,12 @@
 # Backend setup
 
-Requires any stable .NET 10.0 SDK. The API uses SQLite by default. Choose SQL Server with
-`Database__Provider=SqlServer` and set `ConnectionStrings__RestaurantOrders` to a
-SQL Server connection string. Keep credentials in environment variables or local
-user secrets.
+Requires any stable .NET 10.0 SDK. The API uses SQL Server by default at
+`mrazitko.varak.net`, database `RestaurantOrders`, login `monami`, with TLS certificate
+validation. Supply the password using `Database__Password`; no password is stored
+in the repository. Override `ConnectionStrings__RestaurantOrders` for another
+connection. Keep credentials in environment variables or local user secrets.
+For local SQLite, explicitly set `Database__Provider=Sqlite` and
+`ConnectionStrings__RestaurantOrders=Data Source=restaurant-orders.db`.
 
 From the repository root:
 
@@ -16,7 +19,7 @@ Startup creates a missing database, applies pending provider-specific migrations
 and initializes default accounts when the accounts table is empty. Existing data
 and accounts are preserved. This also applies before `--bootstrap-admin`.
 
-For SQL Server, set the two environment variables first. To apply migrations and
+For the default SQL Server, set `Database__Password` first. To apply migrations and
 exit without starting the server or creating default accounts, run:
 
 ```powershell

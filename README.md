@@ -9,8 +9,17 @@ One active order per table; one saved unit per tap; independent delivery/payment
 Install any stable .NET **10.0** SDK, Node **25.9.0** and npm **11.12.1**. From the repository root, using PowerShell:
 
 ```powershell
+$sqlPassword = Read-Host 'SQL Server password for monami' -AsSecureString
+$env:Database__Password = [System.Net.NetworkCredential]::new('', $sqlPassword).Password
+$sqlPassword.Dispose()
 .\scripts\start-local.ps1
 ```
+
+The primary database is SQL Server at `mrazitko.varak.net`, database
+`RestaurantOrders`, login `monami`. Supply its password through `Database__Password`
+or override the full `ConnectionStrings__RestaurantOrders` connection string.
+For local SQLite, set `Database__Provider=Sqlite` and
+`ConnectionStrings__RestaurantOrders=Data Source=restaurant-orders.db` instead.
 
 On subsequent runs, use `.\scripts\start-local.ps1` (add `-SkipInstall` to reuse
 installed frontend dependencies). The script builds the API, applies migrations,

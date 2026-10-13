@@ -83,7 +83,8 @@ Supply these environment variables through the service manager or secret store:
 
 | Variable | Meaning |
 | --- | --- |
-| `Database__Provider` | `Sqlite` (default) or `SqlServer` |
+| `Database__Provider` | `SqlServer` (default) or `Sqlite` |
+| `Database__Password` | SQL Server password; overrides the password in the connection string |
 | `ConnectionStrings__RestaurantOrders` | Database connection string; use an absolute SQLite path outside the release directory |
 | `ASPNETCORE_URLS` | Backend listener, e.g. `http://127.0.0.1:5080` behind HTTPS proxy |
 | `AllowedHosts` | Public hostname(s), separated by semicolons |
@@ -96,7 +97,7 @@ Grant the service account access only to its configuration, database and key dir
 
 ## SQLite
 
-Set `Database__Provider=Sqlite` and, for example, `ConnectionStrings__RestaurantOrders=Data Source=/var/lib/restaurant-orders/orders.db`. Create the containing directory first. One app instance with local durable storage is the default deployment; do not put a live SQLite database on a network share.
+Set `Database__Provider=Sqlite` and, for example, `ConnectionStrings__RestaurantOrders=Data Source=/var/lib/restaurant-orders/orders.db`. Create the containing directory first. Use one app instance with local durable storage for SQLite; do not put a live SQLite database on a network share.
 
 From the release directory, with the same configuration as the service:
 
@@ -115,6 +116,13 @@ command. Migrations use the configured provider and connection string, unlike
 design-time migration-generation factories.
 
 ## SQL Server
+
+The default connection uses `mrazitko.varak.net`, database `RestaurantOrders`, and
+login `monami`, with encryption and TLS certificate validation. Supply
+`Database__Password` through the service environment or secret store before
+startup. No SQL Server password is committed. A missing SQL authentication
+password produces a configuration error before migrations. Override
+`ConnectionStrings__RestaurantOrders` to change the database, host, or login.
 
 SQL Server **2022** is the tested version. Create a dedicated database and application login, set `Database__Provider=SqlServer`, and configure a connection string with TLS validation, for example `Server=sql.example;Database=RestaurantOrders;User Id=restaurant;Password=<from secret store>;Encrypt=True;TrustServerCertificate=False`. Windows integrated authentication is also supported where configured.
 

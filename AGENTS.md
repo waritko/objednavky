@@ -33,6 +33,13 @@ Start API automaticky aplikuje migrace; chybějící heslo SQL autentizace skon�
 chybou konfigurace ještě před migracemi. Testy používají izolované databáze,
 nikdy neprováděj integrační testy proti provozní databázi.
 
+Ověření změny výchozí databáze: sestavení backendu a kompletní integrační sada
+SQLite prošly, stejně jako kontrola formátování změněného `Program.cs` a kontrola
+odmítnutí SQL startu bez hesla. Připojení k vzdálenému SQL Serveru vyžaduje dodané
+heslo a dosud nebylo ověřeno. Celková kontrola `dotnet format` hlásí existující
+problémy s kódováním v obou migracích `20261006151612_OrderNotes.cs` (SQLite)
+a `20261006151712_OrderNotes.cs` (SQL Server).
+
 ## Pravidla
 
 - Po každém vyřešeném požadavku vytvoř git commit s relevantními změnami.

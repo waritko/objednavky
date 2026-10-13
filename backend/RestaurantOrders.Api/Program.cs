@@ -12,9 +12,10 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
-var provider = builder.Configuration["Database:Provider"] ?? "Sqlite";
+var provider = builder.Configuration["Database:Provider"] ?? "SqlServer";
 var connection = builder.Configuration.GetConnectionString("RestaurantOrders")
     ?? throw new InvalidOperationException("ConnectionStrings:RestaurantOrders is required.");
 
@@ -25,6 +26,12 @@ switch (provider.ToLowerInvariant())
         builder.Services.AddScoped<RestaurantDbContext>(services => services.GetRequiredService<SqliteRestaurantDbContext>());
         break;
     case "sqlserver":
+        var sqlConnection = new SqlConnectionStringBuilder(connection);
+        if (builder.Configuration["Database:Password"] is { Length: > 0 } password)
+            sqlConnection.Password = password;
+        if (!sqlConnection.IntegratedSecurity && string.IsNullOrEmpty(sqlConnection.Password))
+            throw new InvalidOperationException("SQL Server password is required. Set Database__Password or supply it in ConnectionStrings__RestaurantOrders.");
+        connection = sqlConnection.ConnectionString;
         builder.Services.AddDbContext<SqlServerRestaurantDbContext>(options => options.UseSqlServer(connection));
         builder.Services.AddScoped<RestaurantDbContext>(services => services.GetRequiredService<SqlServerRestaurantDbContext>());
         break;
