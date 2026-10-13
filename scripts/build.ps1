@@ -55,8 +55,9 @@ try {
         Push-Location $staging
         try {
             # Relative paths avoid treating Windows drive letters as SCP hosts.
-            # Copy the contents, including hidden files, rather than the staging folder.
-            $publishedFiles = @(Get-ChildItem -Force | ForEach-Object { './' + $_.Name })
+            # Preserve the destination's appsettings files; keep them in the local ZIP.
+            # Copy the remaining contents, including hidden files, rather than the staging folder.
+            $publishedFiles = @(Get-ChildItem -Force -Exclude 'appsettings*' | ForEach-Object { './' + $_.Name })
             & $scp @scpArguments -- @publishedFiles $ScpDestination
             if ($LASTEXITCODE -ne 0) { throw "SCP copy failed: $ScpDestination" }
         }

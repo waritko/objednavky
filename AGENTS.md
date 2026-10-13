@@ -20,6 +20,8 @@ historii oprav a audit a uzavírá objednávku po doručení a zaplacení všech
 - `scripts/build.ps1`: sestavení distribučního ZIP a standardně kopie přes SCP
   do `waritko@mrazitko.varak.net:/home/waritko/objednavky-run`;
   `-SkipScp` vytvoří pouze lokální balíček.
+  SCP vynechává soubory `appsettings*` v kořeni publikace, aby zachovalo konfiguraci
+  serveru; lokální publikační adresář a ZIP je nadále obsahují.
 - `docs`: dokumentace provozu, API, importů a ověřování.
 - `README.md`, `PLAN.md`, `PROGRESS.md`, `spec.md`: úvod, plán, průběh a zadání.
 

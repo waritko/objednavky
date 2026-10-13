@@ -21,8 +21,10 @@ than the ZIP or its enclosing directory) via SCP to
 `waritko@mrazitko.varak.net:/home/waritko/objednavky-run`. The remote directory must
 already exist and be writable. OpenSSH `scp` must be on PATH; authentication and
 host verification use your SSH configuration. The copy overwrites matching files,
-retains other remote files, and does not restart the application. A failed copy
-fails the script while retaining the local publish directory and ZIP.
+retains other remote files, and does not restart the application. Files matching
+`appsettings*` in the publish directory are excluded from SCP to preserve the
+server configuration; they remain in the local publish directory and ZIP.
+A failed copy fails the script while retaining the local publish directory and ZIP.
 
 Configure the destination, SSH port, or private key, or skip copying:
 
