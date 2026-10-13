@@ -19,10 +19,17 @@ internal static class SalesChecks
         var actor = await db.Accounts.Select(x => x.Id).FirstAsync();
         var table = new RestaurantTable { Name = "Sales test" };
         var category = new Category { Code = "SALES", Name = "Sales" };
-        var item = new MenuItem { Code = "SALES", Name = "Renamed item", CategoryId = category.Id, Price = 999 };
-        var order = new RestaurantOrder { TableId = table.Id, ActiveTableId = table.Id, CreatedByAccountId = actor, OpenedAt = DateTimeOffset.Parse("2026-03-01T00:00:00Z") };
-        var closed = new RestaurantOrder { TableId = table.Id, CreatedByAccountId = actor, OpenedAt = order.OpenedAt, State = OrderState.Closed };
-        db.AddRange(table, category, item, order, closed);
+        var item = new MenuItem { Code = "SALES", Name = "Renamed item", Price = 999 };
+        var order = new RestaurantOrder { CreatedByAccountId = actor, OpenedAt = DateTimeOffset.Parse("2026-03-01T00:00:00Z") };
+        var closed = new RestaurantOrder { CreatedByAccountId = actor, OpenedAt = order.OpenedAt, State = OrderState.Closed };
+        db.AddRange(table, category);
+        await db.SaveChangesAsync();
+        item.CategoryId = category.Id;
+        order.TableId = table.Id;
+        order.ActiveTableId = table.Id;
+        closed.TableId = table.Id;
+        db.AddRange(item, order, closed);
+        await db.SaveChangesAsync();
         void Unit(string? paid, decimal price = 10, bool removed = false, bool isClosed = false)
         {
             db.OrderUnits.Add(new OrderUnit

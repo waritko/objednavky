@@ -41,19 +41,19 @@ public static class AuthEndpoints
             return Results.NoContent();
         }).RequireAuthorization();
         app.MapGet("/auth/me", async (ClaimsPrincipal user, RestaurantDbContext db, CancellationToken ct) =>
-            Results.Ok(AccountView.From(await db.Accounts.SingleAsync(x => x.Id == Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!), ct))))
+            Results.Ok(AccountView.From(await db.Accounts.SingleAsync(x => x.Id == int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!), ct))))
             .RequireAuthorization();
         var accounts = app.MapGroup("/accounts").RequireAuthorization(policy => policy.RequireRole("Administrator"));
         accounts.MapGet("", async (RestaurantDbContext db, CancellationToken ct) =>
             (await db.Accounts.AsNoTracking().OrderBy(x => x.Username).ToListAsync(ct)).Select(AccountView.From));
         accounts.MapPost("", (AccountInput input, AccountService service, CancellationToken ct) => service.SaveAsync(null, input, ct));
-        accounts.MapPut("/{id:guid}", (Guid id, AccountInput input, AccountService service, CancellationToken ct) => service.SaveAsync(id, input, ct));
+        accounts.MapPut("/{id:int}", (int id, AccountInput input, AccountService service, CancellationToken ct) => service.SaveAsync(id, input, ct));
     }
 
     public static async Task ValidateSessionAsync(CookieValidatePrincipalContext context)
     {
         var db = context.HttpContext.RequestServices.GetRequiredService<RestaurantDbContext>();
-        var validId = Guid.TryParse(context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var id);
+        var validId = int.TryParse(context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var id);
         var account = validId ? await db.Accounts.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, context.HttpContext.RequestAborted) : null;
         if (account is null || !account.Enabled || context.Principal?.FindFirstValue(StampClaim) != Stamp(account))
         {

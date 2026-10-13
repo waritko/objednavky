@@ -9,7 +9,7 @@ interface SalesReport {
     quantity: number;
     total: number;
     items: {
-      menuItemId: string;
+      menuItemId: number;
       itemName: string;
       quantity: number;
       total: number;

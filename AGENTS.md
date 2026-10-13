@@ -40,6 +40,28 @@ heslo a dosud nebylo ověřeno. Celková kontrola `dotnet format` hlásí existu
 problémy s kódováním v obou migracích `20261006151612_OrderNotes.cs` (SQLite)
 a `20261006151712_OrderNotes.cs` (SQL Server).
 
+Všechny entity a jejich odkazy používají databází generované klíče `int`
+(SQL Server `IDENTITY`, SQLite `AUTOINCREMENT`); API vrací ID jako JSON čísla.
+GUID zůstává pouze pro `ConcurrencyToken` a samostatný `OrderUnit.RequestToken`
+s unikátním indexem. Přidání položky přijímá `{menuItemId, requestToken}`; klient
+generuje UUID pro každý klik a zachovává jej při opakování požadavku.
+Migrace `IntegerIds` pro oba poskytovatele transakčně přestaví osm tabulek
+a převede původní ID, odkazy, klíče poznámek a ID položek v auditu. Původní
+GUID jednotky se zachová jako retry token. Před nasazením zastav všechny
+instance a vytvoř zálohu; návrat vyžaduje obnovu zálohy, `Down` je odmítnut.
+Staré klienty je nutné obnovit a znovu přihlásit; čekající kliky se starými
+ID nelze přehrát. Podrobnosti jsou v `docs/deployment.md` a `docs/orders.md`.
+Integrační sada obsahuje `MigrationChecks`: upgrade naplněné staré databáze
+s poznámkami i bez nich, kontrolu vztahů, historie, auditu a generování ID.
+SQL Server ověřuj pouze s `TEST_SQLSERVER_CONNECTION` na izolované instanci
+příkazem `dotnet run --project backend/RestaurantOrders.SmokeTests -- --sqlserver`.
+Ověření převodu ID: kompletní integrační sada SQLite, šest frontendových testů,
+produkční sestavení a oba mobilní E2E scénáře prošly. Kontrola formátování
+změněných souborů a kontrola SQL Server modelu proti snapshotu prošly; SQL
+migrační skript byl vygenerován. Spuštění migrace na SQL Serveru zůstává
+neověřené bez izolovaného testovacího připojení. Mazání dočasných SQLite
+databází v testech krátce opakuje pokus při dočasném zámku souboru ve Windows.
+
 ## Pravidla
 
 - Po každém vyřešeném požadavku vytvoř git commit s relevantními změnami.

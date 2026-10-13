@@ -6,15 +6,15 @@ import {
 } from "../src/checkoutCsv.ts";
 
 const items = [
-  { id: "coffee-id", code: "001" },
-  { id: "tea-id", code: "TEA" },
-  { id: "other-id", code: "002" },
+  { id: 1, code: "001" },
+  { id: 2, code: "TEA" },
+  { id: 3, code: "002" },
 ];
 const checkoutCsv = (before, after) => createCsv(before, after, items);
 
 const unit = (id, overrides = {}) => ({
   id,
-  menuItemId: "coffee-id",
+  menuItemId: 1,
   itemName: 'Káva, "velká"',
   paidAt: null,
   removedAt: null,
@@ -25,11 +25,11 @@ const paid = (unit) => ({ ...unit, paidAt: "2026-10-06T12:00:00Z" });
 test("full checkout groups newly paid quantities and excludes prior payments and removals", () => {
   const before = {
     units: [
-      unit("1"),
-      unit("2"),
-      unit("3", { menuItemId: "tea-id", itemName: "Čaj\nzelený" }),
-      unit("4", { paidAt: "earlier" }),
-      unit("5", { removedAt: "earlier" }),
+      unit(1),
+      unit(2),
+      unit(3, { menuItemId: 2, itemName: "Čaj\nzelený" }),
+      unit(4, { paidAt: "earlier" }),
+      unit(5, { removedAt: "earlier" }),
     ],
   };
   const after = { units: before.units.map(paid), state: "Closed" };
@@ -40,7 +40,7 @@ test("full checkout groups newly paid quantities and excludes prior payments and
 });
 
 test("partial checkout exports only the paid subset and subsequent checkout exports the remainder", () => {
-  const before = { units: [unit("1"), unit("2"), unit("3")] };
+  const before = { units: [unit(1), unit(2), unit(3)] };
   const partial = {
     units: [paid(before.units[0]), before.units[1], before.units[2]],
   };
@@ -55,16 +55,16 @@ test("partial checkout exports only the paid subset and subsequent checkout expo
 });
 
 test("unchanged payment state produces no file", () => {
-  const order = { units: [unit("1"), unit("2", { paidAt: "earlier" })] };
+  const order = { units: [unit(1), unit(2, { paidAt: "earlier" })] };
   assert.equal(checkoutCsv(order, order), null);
 });
 
 test("distinct products and saved names remain distinguishable", () => {
   const before = {
     units: [
-      unit("1"),
-      unit("2", { menuItemId: "other-id" }),
-      unit("3", { itemName: "New name" }),
+      unit(1),
+      unit(2, { menuItemId: 3 }),
+      unit(3, { itemName: "New name" }),
     ],
   };
   const csv = checkoutCsv(before, { units: before.units.map(paid) });

@@ -38,7 +38,7 @@ parents may be edited; disabling a parent does not rewrite its children's flags.
 Catalog changes never rewrite existing order-unit snapshots.
 
 POST `/catalog/items/assign-subcategory` accepts
-`{"itemIds":["guid"],"subcategoryId":"guid-or-null"}` (use JSON null to clear).
+`{"itemIds":[1,2],"subcategoryId":3}` (use JSON null to clear).
 Select 1–500 IDs. Duplicates are ignored. Every item must exist and, for assignment,
 belong to the target subcategory's category. Validation and updates are atomic.
 

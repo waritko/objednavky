@@ -3,7 +3,7 @@ using RestaurantOrders.Api.Persistence;
 
 namespace RestaurantOrders.Api.Orders;
 
-public sealed record SoldItem(Guid MenuItemId, string ItemName, int Quantity, decimal Total);
+public sealed record SoldItem(int MenuItemId, string ItemName, int Quantity, decimal Total);
 public sealed record SalesDay(DateOnly Date, int Quantity, decimal Total, SoldItem[] Items);
 public sealed record SalesReport(string TimeZone, SalesDay[] Days);
 

@@ -7,10 +7,10 @@ namespace RestaurantOrders.Api.Catalog;
 
 public sealed record TableInput(string? Name, int SortOrder = 0, bool Enabled = true);
 public sealed record CategoryInput(string? Code, string? Name, int SortOrder = 0, bool Enabled = true);
-public sealed record SubcategoryInput(Guid CategoryId, string? Name, int SortOrder = 0, bool Enabled = true);
-public sealed record ItemInput(string? Code, Guid CategoryId, Guid? SubcategoryId, string? Name,
+public sealed record SubcategoryInput(int CategoryId, string? Name, int SortOrder = 0, bool Enabled = true);
+public sealed record ItemInput(string? Code, int CategoryId, int? SubcategoryId, string? Name,
     decimal PriceBeforeVat, decimal VatRate, int SortOrder = 0, bool Enabled = true);
-public sealed record AssignmentInput(Guid[]? ItemIds, Guid? SubcategoryId);
+public sealed record AssignmentInput(int[]? ItemIds, int? SubcategoryId);
 
 public sealed class CatalogService(RestaurantDbContext db)
 {
@@ -43,7 +43,7 @@ public sealed class CatalogService(RestaurantDbContext db)
         return result;
     }
 
-    public Task<IResult> SaveTable(Guid? id, TableInput input, CancellationToken ct) => Write(async () =>
+    public Task<IResult> SaveTable(int? id, TableInput input, CancellationToken ct) => Write(async () =>
     {
         if (!Text(input.Name, 100)) return Invalid();
         var entity = id is null ? new RestaurantTable { Name = "" } : await db.Tables.FindAsync([id.Value], ct);
@@ -55,7 +55,7 @@ public sealed class CatalogService(RestaurantDbContext db)
         return Results.Ok(entity);
     }, ct);
 
-    public Task<IResult> SaveCategory(Guid? id, CategoryInput input, CancellationToken ct) => Write(async () =>
+    public Task<IResult> SaveCategory(int? id, CategoryInput input, CancellationToken ct) => Write(async () =>
     {
         if (!Text(input.Name, 150) || !Text(input.Code, 50)) return Invalid();
         var entity = id is null ? new Category { Name = "", Code = "" } : await db.Categories.FindAsync([id.Value], ct);
@@ -71,7 +71,7 @@ public sealed class CatalogService(RestaurantDbContext db)
         return Results.Ok(entity);
     }, ct);
 
-    public Task<IResult> SaveSubcategory(Guid? id, SubcategoryInput input, CancellationToken ct) => Write(async () =>
+    public Task<IResult> SaveSubcategory(int? id, SubcategoryInput input, CancellationToken ct) => Write(async () =>
     {
         if (!Text(input.Name, 150)) return Invalid();
         var entity = id is null ? new Subcategory { Name = "" } : await db.Subcategories.FindAsync([id.Value], ct);
@@ -88,7 +88,7 @@ public sealed class CatalogService(RestaurantDbContext db)
         return Results.Ok(entity);
     }, ct);
 
-    public Task<IResult> SaveItem(Guid? id, ItemInput input, CancellationToken ct) => Write(async () =>
+    public Task<IResult> SaveItem(int? id, ItemInput input, CancellationToken ct) => Write(async () =>
     {
         if (!Text(input.Name, 200) || !Text(input.Code, 50)) return Invalid();
         // Bound arithmetic and enforce the same decimal scale on SQLite and SQL Server.

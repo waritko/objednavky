@@ -11,7 +11,7 @@ public static class CatalogEndpoints
         tables.MapGet("", async (RestaurantDbContext db, CancellationToken ct) =>
             await db.Tables.AsNoTracking().OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ThenBy(x => x.Id).ToListAsync(ct));
         tables.MapPost("", (TableInput input, CatalogService service, CancellationToken ct) => service.SaveTable(null, input, ct)).RequireAuthorization(p => p.RequireRole("Administrator"));
-        tables.MapPut("/{id:guid}", (Guid id, TableInput input, CatalogService service, CancellationToken ct) => service.SaveTable(id, input, ct)).RequireAuthorization(p => p.RequireRole("Administrator"));
+        tables.MapPut("/{id:int}", (int id, TableInput input, CatalogService service, CancellationToken ct) => service.SaveTable(id, input, ct)).RequireAuthorization(p => p.RequireRole("Administrator"));
 
         var catalog = app.MapGroup("/catalog").RequireAuthorization();
         catalog.MapGet("/categories", async (RestaurantDbContext db, CancellationToken ct) =>
@@ -28,11 +28,11 @@ public static class CatalogEndpoints
         administration.MapPost("/import/commit", (CsvCommitInput input, CsvImportService service, System.Security.Claims.ClaimsPrincipal user, CancellationToken ct) =>
             service.Commit(input, user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value, ct));
         administration.MapPost("/categories", (CategoryInput input, CatalogService service, CancellationToken ct) => service.SaveCategory(null, input, ct));
-        administration.MapPut("/categories/{id:guid}", (Guid id, CategoryInput input, CatalogService service, CancellationToken ct) => service.SaveCategory(id, input, ct));
+        administration.MapPut("/categories/{id:int}", (int id, CategoryInput input, CatalogService service, CancellationToken ct) => service.SaveCategory(id, input, ct));
         administration.MapPost("/subcategories", (SubcategoryInput input, CatalogService service, CancellationToken ct) => service.SaveSubcategory(null, input, ct));
-        administration.MapPut("/subcategories/{id:guid}", (Guid id, SubcategoryInput input, CatalogService service, CancellationToken ct) => service.SaveSubcategory(id, input, ct));
+        administration.MapPut("/subcategories/{id:int}", (int id, SubcategoryInput input, CatalogService service, CancellationToken ct) => service.SaveSubcategory(id, input, ct));
         administration.MapPost("/items", (ItemInput input, CatalogService service, CancellationToken ct) => service.SaveItem(null, input, ct));
-        administration.MapPut("/items/{id:guid}", (Guid id, ItemInput input, CatalogService service, CancellationToken ct) => service.SaveItem(id, input, ct));
+        administration.MapPut("/items/{id:int}", (int id, ItemInput input, CatalogService service, CancellationToken ct) => service.SaveItem(id, input, ct));
         administration.MapPost("/items/assign-subcategory", (AssignmentInput input, CatalogService service, CancellationToken ct) => service.Assign(input, ct));
     }
 }

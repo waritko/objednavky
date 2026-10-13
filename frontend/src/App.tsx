@@ -10,7 +10,7 @@ import { downloadCheckoutCsv } from "./checkoutCsv";
 
 type Screen =
   "tables" | "active" | "kitchen" | "history" | "order" | "admin" | "sales";
-type Tap = { tableId: string; menuItemId: string; unitId: string };
+type Tap = { tableId: number; menuItemId: number; requestToken: string };
 const emptyCatalog: Catalog = {
   tables: [],
   categories: [],
@@ -25,8 +25,8 @@ export function App() {
   const [catalog, setCatalog] = useState<Catalog>(emptyCatalog);
   const [orders, setOrders] = useState<Order[]>([]);
   const [order, setOrder] = useState<Order | null>(null);
-  const [tableId, setTableId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [tableId, setTableId] = useState(0);
+  const [categoryId, setCategoryId] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(0);
@@ -135,7 +135,7 @@ export function App() {
         const tap = queue.current[0];
         const result = await api<Order>(`/tables/${tap.tableId}/units`, {
           menuItemId: tap.menuItemId,
-          unitId: tap.unitId,
+          requestToken: tap.requestToken,
         });
         setTableId(tap.tableId);
         setOrder(result);
@@ -151,12 +151,16 @@ export function App() {
       draining.current = false;
     }
   }
-  function add(menuItemId: string) {
-    queue.current.push({ tableId, menuItemId, unitId: crypto.randomUUID() });
+  function add(menuItemId: number) {
+    queue.current.push({
+      tableId,
+      menuItemId,
+      requestToken: crypto.randomUUID(),
+    });
     persist();
     void drain();
   }
-  async function openTable(id: string) {
+  async function openTable(id: number) {
     await run(async () => {
       const next = await api<Order | null>(`/tables/${id}/order`);
       setOrder(next);
@@ -166,7 +170,7 @@ export function App() {
   }
   async function change(
     action: string,
-    ids: string[] | null,
+    ids: number[] | null,
     confirmPaidRemoval = false,
     target: Order | null = order,
   ) {
@@ -199,7 +203,7 @@ export function App() {
       await refresh();
     });
   }
-  async function saveNote(note: string, menuItemId?: string) {
+  async function saveNote(note: string, menuItemId?: number) {
     if (!order) return false;
     let saved = false;
     await run(async () => {
@@ -290,7 +294,7 @@ export function App() {
           (sub) => sub.id === item.subcategoryId && sub.enabled,
         )),
   );
-  const tableName = (id: string) =>
+  const tableName = (id: number) =>
     catalog.tables.find((table) => table.id === id)?.name || "Stůl";
   const displayOrders =
     screen === "history"
@@ -591,7 +595,7 @@ export function App() {
                               {
                                 name: string;
                                 count: number;
-                                unitIds: string[];
+                                unitIds: number[];
                                 delivered: boolean;
                                 addedAt: string;
                                 note?: string;

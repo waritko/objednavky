@@ -8,9 +8,9 @@ using RestaurantOrders.Api.Persistence;
 
 namespace RestaurantOrders.Api.Orders;
 
-public sealed record AddUnitInput(Guid MenuItemId, Guid UnitId);
-public sealed record ChangeNoteInput(Guid ConcurrencyToken, string? Note, Guid? MenuItemId = null);
-public sealed record ChangeUnitsInput(Guid ConcurrencyToken, Guid[]? UnitIds, bool All = false, bool ConfirmPaidRemoval = false);
+public sealed record AddUnitInput(int MenuItemId, Guid RequestToken);
+public sealed record ChangeNoteInput(Guid ConcurrencyToken, string? Note, int? MenuItemId = null);
+public sealed record ChangeUnitsInput(Guid ConcurrencyToken, int[]? UnitIds, bool All = false, bool ConfirmPaidRemoval = false);
 
 public sealed class OrderService(RestaurantDbContext db)
 {
@@ -27,7 +27,7 @@ public sealed class OrderService(RestaurantDbContext db)
             order.CreatedByAccountId,
             order.ConcurrencyToken,
             order.Note,
-            lineNotes = JsonSerializer.Deserialize<Dictionary<Guid, string>>(order.LineNotesJson),
+            lineNotes = JsonSerializer.Deserialize<Dictionary<int, string>>(order.LineNotesJson),
             total = current.Sum(x => x.UnitPrice),
             paid = current.Where(x => x.PaidAt is not null).Sum(x => x.UnitPrice),
             unpaid = current.Where(x => x.PaidAt is null).Sum(x => x.UnitPrice),
@@ -57,10 +57,10 @@ public sealed class OrderService(RestaurantDbContext db)
         catch (Exception e) when (DatabaseConflicts.IsConflict(e)) { return Conflict(); }
     }
 
-    public Task<IResult> Add(Guid tableId, AddUnitInput input, Guid actor, CancellationToken ct) => Write(async () =>
+    public Task<IResult> Add(int tableId, AddUnitInput input, int actor, CancellationToken ct) => Write(async () =>
     {
-        if (input.UnitId == Guid.Empty) return Error("invalid_unit_id", "Chybí identifikátor přidání položky.");
-        var existing = await db.OrderUnits.AsNoTracking().SingleOrDefaultAsync(x => x.Id == input.UnitId, ct);
+        if (input.RequestToken == Guid.Empty) return Error("invalid_request_token", "Chybí identifikátor přidání položky.");
+        var existing = await db.OrderUnits.AsNoTracking().SingleOrDefaultAsync(x => x.RequestToken == input.RequestToken, ct);
         if (existing is not null)
         {
             var original = await db.Orders.Include(x => x.Units).SingleAsync(x => x.Id == existing.OrderId, ct);
@@ -81,10 +81,11 @@ public sealed class OrderService(RestaurantDbContext db)
         {
             order = new RestaurantOrder { TableId = tableId, ActiveTableId = tableId, CreatedByAccountId = actor, OpenedAt = now };
             db.Orders.Add(order);
+            await db.SaveChangesAsync(ct);
         }
         var unit = new OrderUnit
         {
-            Id = input.UnitId,
+            RequestToken = input.RequestToken,
             OrderId = order.Id,
             MenuItemId = item.Id,
             ItemName = item.Name,
@@ -95,14 +96,15 @@ public sealed class OrderService(RestaurantDbContext db)
             AddedByAccountId = actor
         };
         order.Units.Add(unit);
-        // Explicitly mark a client-assigned key as new on existing orders.
+        // Persist generated keys before creating the audit reference and response.
         db.OrderUnits.Add(unit);
+        await db.SaveChangesAsync(ct);
         order.ConcurrencyToken = Guid.NewGuid();
         Audit(order, unit, actor, now, "Added", new { unit.ItemName, unit.UnitPrice });
         return Results.Ok(View(order));
     }, ct);
 
-    public Task<IResult> Change(Guid id, string action, ChangeUnitsInput input, Guid actor, CancellationToken ct) => Write(async () =>
+    public Task<IResult> Change(int id, string action, ChangeUnitsInput input, int actor, CancellationToken ct) => Write(async () =>
     {
         if (action is not ("processed" or "paid" or "removed")) return Results.NotFound();
         if ((input.All && input.UnitIds is { Length: > 0 }) || (!input.All && input.UnitIds is not { Length: > 0 }))
@@ -145,7 +147,7 @@ public sealed class OrderService(RestaurantDbContext db)
         return Results.Ok(View(order));
     }, ct);
 
-    public Task<IResult> ChangeNote(Guid id, ChangeNoteInput input, Guid actor, CancellationToken ct) => Write(async () =>
+    public Task<IResult> ChangeNote(int id, ChangeNoteInput input, int actor, CancellationToken ct) => Write(async () =>
     {
         var order = await db.Orders.Include(x => x.Units).SingleOrDefaultAsync(x => x.Id == id, ct);
         if (order is null) return Results.NotFound();
@@ -154,9 +156,9 @@ public sealed class OrderService(RestaurantDbContext db)
         var note = input.Note?.Trim();
         if (note?.Length > 1000) return Error("invalid_note", "Poznámka může mít nejvýše 1000 znaků.");
         if (string.IsNullOrEmpty(note)) note = null;
-        var notes = JsonSerializer.Deserialize<Dictionary<Guid, string>>(order.LineNotesJson)!;
+        var notes = JsonSerializer.Deserialize<Dictionary<int, string>>(order.LineNotesJson)!;
         string? before;
-        if (input.MenuItemId is Guid itemId)
+        if (input.MenuItemId is int itemId)
         {
             if (!order.Units.Any(x => x.MenuItemId == itemId && x.RemovedAt is null))
                 return Error("invalid_line", "Položka nepatří do aktivních řádků objednávky.");
@@ -177,7 +179,7 @@ public sealed class OrderService(RestaurantDbContext db)
         return Results.Ok(View(order));
     }, ct);
 
-    private void Audit(RestaurantOrder order, OrderUnit? unit, Guid actor, DateTimeOffset now, string action, object details) =>
+    private void Audit(RestaurantOrder order, OrderUnit? unit, int actor, DateTimeOffset now, string action, object details) =>
         db.AuditEvents.Add(new AuditEvent
         {
             OrderId = order.Id,

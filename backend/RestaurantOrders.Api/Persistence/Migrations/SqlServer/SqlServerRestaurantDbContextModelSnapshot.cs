@@ -24,9 +24,11 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.Account", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");
@@ -56,17 +58,19 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.AuditEvent", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid>("ActorAccountId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("ActorAccountId")
+                        .HasColumnType("int");
 
                     b.Property<string>("DetailsJson")
                         .HasColumnType("nvarchar(max)");
@@ -74,11 +78,11 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid?>("UnitId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("UnitId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -91,9 +95,11 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.Category", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -121,12 +127,14 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.MenuItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -152,8 +160,8 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("SubcategoryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("SubcategoryId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("VatRate")
                         .HasPrecision(5, 2)
@@ -173,15 +181,17 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.OrderUnit", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("AddedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("AddedByAccountId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("AddedByAccountId")
+                        .HasColumnType("int");
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
@@ -193,28 +203,31 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<Guid>("MenuItemId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("MenuItemId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("PaidAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("PaidByAccountId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("PaidByAccountId")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("ProcessedByAccountId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("ProcessedByAccountId")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("RemovedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("RemovedByAccountId")
+                    b.Property<int?>("RemovedByAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RequestToken")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SubcategoryName")
@@ -233,17 +246,21 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
                     b.HasIndex("OrderId");
 
+                    b.HasIndex("RequestToken").IsUnique();
+
                     b.ToTable("OrderUnits");
                 });
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.RestaurantOrder", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid?>("ActiveTableId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ActiveTableId")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("ClosedAt")
                         .HasColumnType("datetimeoffset");
@@ -252,8 +269,8 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
                         .IsConcurrencyToken()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CreatedByAccountId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("CreatedByAccountId")
+                        .HasColumnType("int");
 
                     b.Property<string>("LineNotesJson")
                         .IsRequired()
@@ -271,8 +288,8 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<Guid>("TableId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("TableId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -289,9 +306,11 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.RestaurantTable", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");
@@ -311,12 +330,14 @@ namespace RestaurantOrders.Api.Persistence.Migrations.SqlServer
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.Subcategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");

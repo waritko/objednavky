@@ -19,9 +19,9 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.Account", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("INTEGER");
@@ -51,17 +51,17 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.AuditEvent", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ActorAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ActorAccountId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("DetailsJson")
                         .HasColumnType("TEXT");
@@ -69,11 +69,11 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("UnitId")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("UnitId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -86,9 +86,9 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.Category", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -116,12 +116,12 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.MenuItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -147,8 +147,8 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("SubcategoryId")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("SubcategoryId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("VatRate")
                         .HasPrecision(5, 2)
@@ -168,15 +168,15 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.OrderUnit", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("AddedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AddedByAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("AddedByAccountId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
@@ -188,28 +188,31 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("MenuItemId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("MenuItemId")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("PaidAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("PaidByAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("PaidByAccountId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ProcessedByAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("ProcessedByAccountId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("RemovedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("RemovedByAccountId")
+                    b.Property<int?>("RemovedByAccountId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("RequestToken")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SubcategoryName")
@@ -228,17 +231,19 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
                     b.HasIndex("OrderId");
 
+                    b.HasIndex("RequestToken").IsUnique();
+
                     b.ToTable("OrderUnits");
                 });
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.RestaurantOrder", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("ActiveTableId")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("ActiveTableId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("ClosedAt")
                         .HasColumnType("TEXT");
@@ -247,8 +252,8 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("CreatedByAccountId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CreatedByAccountId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("LineNotesJson")
                         .IsRequired()
@@ -266,8 +271,8 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("TableId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("TableId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -283,9 +288,9 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.RestaurantTable", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("INTEGER");
@@ -305,12 +310,12 @@ namespace RestaurantOrders.Api.Persistence.Migrations.Sqlite
 
             modelBuilder.Entity("RestaurantOrders.Api.Domain.Subcategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("INTEGER");

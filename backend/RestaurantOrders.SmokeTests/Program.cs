@@ -81,11 +81,11 @@ try
     await Token(admin);
     await Check(await admin.GetAsync("/accounts"), 200, "administrator access");
     var me = await admin.GetFromJsonAsync<JsonElement>("/auth/me");
-    var adminId = me.GetProperty("id").GetGuid();
+    var adminId = me.GetProperty("id").GetInt32();
     await Check(await admin.PutAsJsonAsync($"/accounts/{adminId}", new { username = "admin", role = "Operational", enabled = true }), 409, "last administrator protected");
     var create = await admin.PostAsJsonAsync("/accounts", new { username = "Waiter", password = "Waiter-password-123", role = "Operational" });
     await Check(create, 200, "create operational account");
-    var id = (await create.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+    var id = (await create.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32();
     await Check(await admin.PostAsJsonAsync("/accounts", new { username = " WAITER ", password = "Waiter-password-123", role = "Operational" }), 409, "duplicate normalized username");
     await Token(staff);
     await Check(await staff.PostAsJsonAsync("/auth/login", new { username = "waiter", password = "Waiter-password-123" }), 200, "operational login");

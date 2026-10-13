@@ -1,11 +1,11 @@
 export interface Account {
-  id: string;
+  id: number;
   username: string;
   role: "Administrator" | "Operational";
   enabled: boolean;
 }
 export interface Table {
-  id: string;
+  id: number;
   name: string;
   sortOrder: number;
   enabled: boolean;
@@ -14,36 +14,36 @@ export interface Category extends Table {
   code: string;
 }
 export interface Subcategory extends Table {
-  categoryId: string;
+  categoryId: number;
 }
 export interface Item extends Category {
-  categoryId: string;
-  subcategoryId: string | null;
+  categoryId: number;
+  subcategoryId: number | null;
   priceBeforeVat: number;
   vatRate: number;
   price: number;
 }
 export interface Unit {
-  id: string;
-  menuItemId: string;
+  id: number;
+  menuItemId: number;
   itemName: string;
   categoryName: string;
   subcategoryName: string | null;
   unitPrice: number;
   addedAt: string;
-  addedByAccountId: string;
+  addedByAccountId: number;
   processedAt: string | null;
-  processedByAccountId: string | null;
+  processedByAccountId: number | null;
   paidAt: string | null;
-  paidByAccountId: string | null;
+  paidByAccountId: number | null;
   removedAt: string | null;
-  removedByAccountId: string | null;
+  removedByAccountId: number | null;
 }
 export interface Order {
   note: string | null;
   lineNotes: Record<string, string>;
-  id: string;
-  tableId: string;
+  id: number;
+  tableId: number;
   state: "Active" | "Closed";
   concurrencyToken: string;
   openedAt: string;
@@ -62,8 +62,8 @@ export interface Catalog {
   items: Item[];
 }
 export interface Audit {
-  id: string;
-  unitId: string | null;
+  id: number;
+  unitId: number | null;
   username: string;
   action: string;
   occurredAt: string;

@@ -65,7 +65,15 @@ internal sealed class TestDatabase(bool sqlServer) : IAsyncDisposable
         else
         {
             SqliteConnection.ClearAllPools();
-            foreach (var suffix in new[] { "", "-shm", "-wal" }) File.Delete(path + suffix);
+            foreach (var suffix in new[] { "", "-shm", "-wal" })
+            {
+                // Windows can briefly retain handles after the API process exits.
+                for (var attempt = 0; ; attempt++)
+                {
+                    try { File.Delete(path + suffix); break; }
+                    catch (IOException) when (attempt < 9) { await Task.Delay(50 * (attempt + 1)); }
+                }
+            }
         }
     }
 }

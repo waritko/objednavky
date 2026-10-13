@@ -7,7 +7,7 @@ using RestaurantOrders.Api.Persistence;
 namespace RestaurantOrders.Api.Auth;
 
 public sealed record AccountInput(string? Username, string? Password, string? Role, bool Enabled = true);
-public sealed record AccountView(Guid Id, string Username, string Role, bool Enabled)
+public sealed record AccountView(int Id, string Username, string Role, bool Enabled)
 {
     public static AccountView From(Account account) => new(account.Id, account.Username, account.Role.ToString(), account.Enabled);
 }
@@ -31,7 +31,7 @@ public sealed class AccountService(RestaurantDbContext db, IPasswordHasher<Accou
         return account;
     }
 
-    public async Task<IResult> SaveAsync(Guid? id, AccountInput input, CancellationToken ct, bool bootstrap = false)
+    public async Task<IResult> SaveAsync(int? id, AccountInput input, CancellationToken ct, bool bootstrap = false)
     {
         var username = Normalize(input.Username);
         if (username.Length is < 1 or > 100 || username.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '.' && c != '-' && c != '_'))

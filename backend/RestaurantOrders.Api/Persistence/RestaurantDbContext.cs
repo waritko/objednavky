@@ -60,6 +60,7 @@ public abstract class RestaurantDbContext(DbContextOptions options) : DbContext(
         {
             e.HasOne<MenuItem>().WithMany().HasForeignKey(x => x.MenuItemId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<Account>().WithMany().HasForeignKey(x => x.AddedByAccountId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => x.RequestToken).IsUnique();
             e.Property(x => x.ItemName).HasMaxLength(200);
             e.Property(x => x.CategoryName).HasMaxLength(150);
             e.Property(x => x.SubcategoryName).HasMaxLength(150);

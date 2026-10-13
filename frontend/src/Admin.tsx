@@ -44,7 +44,7 @@ export function Admin({
 }) {
   const [section, setSection] = useState<Section>("tables");
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [editing, setEditing] = useState<string | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
   const [values, setValues] = useState<FormValues>({
     name: "",
     sortOrder: 0,
@@ -53,7 +53,7 @@ export function Admin({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
   const [assignment, setAssignment] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [encoding, setEncoding] = useState("utf-8");
@@ -373,7 +373,7 @@ export function Admin({
                         value={String(values.categoryId || "")}
                         required
                         onChange={(event) =>
-                          set("categoryId", event.target.value)
+                          set("categoryId", Number(event.target.value))
                         }
                       >
                         <option value="">Vyberte kategorii</option>
@@ -393,7 +393,12 @@ export function Admin({
                         <select
                           value={String(values.subcategoryId || "")}
                           onChange={(event) =>
-                            set("subcategoryId", event.target.value)
+                            set(
+                              "subcategoryId",
+                              event.target.value
+                                ? Number(event.target.value)
+                                : "",
+                            )
                           }
                         >
                           <option value="">Přímo v kategorii</option>
@@ -477,7 +482,7 @@ export function Admin({
                     void run(async () => {
                       await api("/catalog/items/assign-subcategory", {
                         itemIds: selected,
-                        subcategoryId: assignment || null,
+                        subcategoryId: assignment ? Number(assignment) : null,
                       });
                       await refresh();
                       setSelected([]);

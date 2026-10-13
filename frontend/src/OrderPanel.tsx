@@ -12,14 +12,14 @@ export function OrderPanel({
 }: {
   order: Order;
   busy: boolean;
-  saveNote: (note: string, menuItemId?: string) => Promise<boolean>;
+  saveNote: (note: string, menuItemId?: number) => Promise<boolean>;
   change: (
     action: string,
-    ids: string[] | null,
+    ids: number[] | null,
     confirm?: boolean,
   ) => Promise<void>;
 }) {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
   const [audit, setAudit] = useState<Audit[] | null>(null);
   const [auditError, setAuditError] = useState("");
   useEffect(() => {

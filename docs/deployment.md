@@ -143,3 +143,24 @@ SQL Server's usual case-insensitive collation treats code variants as duplicates
 - Deploy to a new release directory to avoid stale static assets, migrate, start the service and check login/table/history flows. A rollback must account for schema compatibility; restore the backup if needed.
 - The built-in login limit permits ten attempts per minute per client address. Behind a trusted proxy, it uses `X-Forwarded-For`; otherwise it sees the proxy address.
 - There is no payment terminal integration or refund action. The application records staff declarations that payment occurred elsewhere.
+
+## Upgrade to integer IDs
+
+The IntegerIds migrations for SQL Server and SQLite assign positive integer keys
+and remap every entity reference, line-note key, and item reference in note audits.
+Order history, payments, delivery/removal timestamps, account passwords and
+concurrency tokens are preserved. Original unit GUIDs become requestToken values,
+so recorded additions remain idempotent. SQL Server uses int IDENTITY(1,1);
+SQLite uses INTEGER PRIMARY KEY AUTOINCREMENT.
+
+Before deploying this schema change, back up the database and stop all application
+instances. Run the new package with --migrate, then start the new application
+and reload browser clients. Old entity URLs and API payloads using GUID IDs are
+no longer valid; existing sessions require login again. Outstanding browser tap
+queues from the old version contain obsolete entity IDs and cannot be replayed.
+The migration stages and copies all eight tables in a transaction, so allow
+storage and downtime proportional to database size. Rollback requires restoring
+the pre-upgrade database backup together with the previous application package;
+the migration deliberately rejects Down because original GUID keys cannot be
+reconstructed. Live SQL Server upgrade verification requires an isolated test
+instance and TEST_SQLSERVER_CONNECTION (never the production database).
