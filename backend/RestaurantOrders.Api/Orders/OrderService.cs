@@ -12,7 +12,7 @@ public sealed record AddUnitInput(int MenuItemId, Guid RequestToken);
 public sealed record ChangeNoteInput(Guid ConcurrencyToken, string? Note, int? MenuItemId = null);
 public sealed record ChangeUnitsInput(Guid ConcurrencyToken, int[]? UnitIds, bool All = false, bool ConfirmPaidRemoval = false);
 
-public sealed class OrderService(RestaurantDbContext db)
+public sealed class OrderService(RestaurantDbContext db, PaymentExport paymentExport)
 {
     public static object View(RestaurantOrder order)
     {
@@ -88,6 +88,10 @@ public sealed class OrderService(RestaurantDbContext db)
             RequestToken = input.RequestToken,
             OrderId = order.Id,
             MenuItemId = item.Id,
+            ItemCode = item.Code,
+            CategoryCode = category.Code,
+            UnitPriceBeforeVat = item.PriceBeforeVat,
+            VatRate = item.VatRate,
             ItemName = item.Name,
             CategoryName = category.Name,
             SubcategoryName = subcategory?.Name,
@@ -119,6 +123,8 @@ public sealed class OrderService(RestaurantDbContext db)
         if (action == "removed" && selected.Any(x => x.PaidAt is not null) && !input.ConfirmPaidRemoval)
             return Error("paid_removal_confirmation", "Potvrďte odebrání zaplacené položky. Vrácení platby se neprovádí.");
         var now = DateTimeOffset.UtcNow;
+        if (action == "paid")
+            await paymentExport.Export(order.Id, selected.Where(x => x.PaidAt is null).ToArray(), now, ct);
         var changed = false;
         foreach (var unit in selected)
         {

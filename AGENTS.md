@@ -81,6 +81,24 @@ migrační skript byl vygenerován. Spuštění migrace na SQL Serveru zůstáv�
 neověřené bez izolovaného testovacího připojení. Mazání dočasných SQLite
 databází v testech krátce opakuje pokus při dočasném zámku souboru ve Windows.
 
+Platby na SQL Serveru zapisují do existující `dbo.VYDEJ` ve stejné databázi
+a transakci jako stav objednávky a audit. Aplikace tuto tabulku nevytváří ani
+nemění; `PaymentExport__Enabled=false` integraci vypne, SQLite ji standardně
+nepoužívá. `cisobj` je ID objednávky. Jedna platební akce sdílí `cisvyd`,
+číslování používá maximum pro `sklad=1 AND cisrad=0` a zámky `UPDLOCK, HOLDLOCK`.
+Export zahrnuje jen nově zaplacené neodebrané kusy, selhání vrací celou platbu.
+Migrace `PaymentExportSnapshots` obou poskytovatelů přidává k jednotkám snapshot
+kódů, ceny bez DPH a sazby DPH. Starší jednotky přebírají kódy a sazbu z katalogu
+a dopočítávají cenu bez DPH z uložené ceny; dřívější změny sazby nelze obnovit.
+Podrobnosti mapování a omezení existující tabulky jsou v `docs/orders.md`.
+Integrační sada obsahuje `PaymentExportChecks` s izolovanou externí tabulkou:
+částečné i úplné platby, číslování, snapshoty, opakování a rollback při chybě.
+Ověření exportu: kompletní integrační sada SQLite a šest frontendových testů
+prošly, stejně jako formátování změněných C# souborů a kontrola modelů obou
+poskytovatelů proti snapshotům. SQL migrační skript byl vygenerován. Schéma
+vývojové `dbo.VYDEJ` bylo pouze načteno bez zápisů; provedení exportu a migrace
+na SQL Serveru zůstává neověřené bez `TEST_SQLSERVER_CONNECTION`.
+
 ## Pravidla
 
 - Po každém vyřešeném požadavku vytvoř git commit s relevantními změnami.

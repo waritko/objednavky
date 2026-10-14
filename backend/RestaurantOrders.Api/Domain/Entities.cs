@@ -73,6 +73,10 @@ public sealed class OrderUnit
     public int OrderId { get; set; }
     public Guid RequestToken { get; set; } = Guid.NewGuid();
     public int MenuItemId { get; set; }
+    public string ItemCode { get; set; } = "";
+    public string CategoryCode { get; set; } = "";
+    public decimal UnitPriceBeforeVat { get; set; }
+    public decimal VatRate { get; set; }
     public required string ItemName { get; set; }
     public required string CategoryName { get; set; }
     public string? SubcategoryName { get; set; }

@@ -60,6 +60,8 @@ internal static class MigrationChecks
                 (await db.Accounts.SingleAsync(x => x.Username == "other")).PasswordHash != "unchanged" ||
                 preserved.ConcurrencyToken != token || preservedUnit.RequestToken != unit ||
                 preservedUnit.MenuItemId != preservedItem.Id || preservedUnit.UnitPrice != 11.2m ||
+                preservedUnit.ItemCode != "LEGACY" || preservedUnit.CategoryCode != "LEGACY" ||
+                preservedUnit.UnitPriceBeforeVat != 10m || preservedUnit.VatRate != 12m ||
                 preservedUnit.ItemName != "Historical item" || preservedUnit.OrderId != preserved.Id ||
                 preservedUnit.AddedByAccountId != preserved.CreatedByAccountId ||
                 preservedUnit.ProcessedByAccountId != preserved.CreatedByAccountId ||

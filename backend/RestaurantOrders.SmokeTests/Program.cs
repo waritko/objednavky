@@ -7,6 +7,7 @@ using RestaurantOrders.Api.Persistence;
 
 await StartupChecks.Run(args.Contains("--sqlserver"));
 await DefaultAccountChecks.Run(args.Contains("--sqlserver"));
+await PaymentExportChecks.Run(args.Contains("--sqlserver"));
 var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
 await using var database = new TestDatabase(args.Contains("--sqlserver"));
 await database.Initialize(migrate: false);
@@ -25,6 +26,8 @@ Process Start(bool bootstrap)
     start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
     start.Environment["ASPNETCORE_URLS"] = address;
     start.Environment["Database__Provider"] = database.Provider;
+    // General API checks do not install the external inventory schema.
+    start.Environment["PaymentExport__Enabled"] = "false";
     start.Environment["ConnectionStrings__RestaurantOrders"] = database.Connection;
     start.Environment["Bootstrap__Username"] = "Admin";
     start.Environment["Bootstrap__Password"] = "Smoke-test-password-123";

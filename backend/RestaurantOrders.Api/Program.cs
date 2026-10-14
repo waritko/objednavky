@@ -54,6 +54,7 @@ builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<PaymentExport>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = 429;

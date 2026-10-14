@@ -30,6 +30,36 @@ Use the latest concurrency token for status changes. A stale token or concurrent
 
 Writes use serializable database transactions, a unique active-table index and optimistic order tokens. Each real unit change writes an audit event in the same transaction. When every non-removed unit is paid and delivered (including removal of the final unit), the order closes and releases its table. Disabled tables/items/categories/subcategories cannot receive additions; existing units remain serviceable.
 
+## Inventory export on payment
+
+SQL Server payments insert into the pre-existing `dbo.VYDEJ` in the same database
+and transaction as the order payment and audit. The application does not create or
+alter this external table. `PaymentExport__Enabled=false` disables the integration;
+SQLite defaults to disabled and can explicitly enable it against an external fixture.
+If an export fails, the entire payment rolls back. Repeated payments export only
+newly paid, non-removed units; removals do not refund or reverse inventory rows.
+
+Each payment action shares one `cisvyd`, allocated as
+`COALESCE(MAX(cisvyd), 0) + 1 WHERE sklad=1 AND cisrad=0`, using SQL Server update
+and serializable range locks. `cisobj` is the order ID, also for partial payments.
+Rows group quantities by saved item code, category code, name, net unit price and
+VAT rate; historical price or tax differences remain separate rows.
+
+The mapping is `sklad=1`, `cisrad=0`, `datvyd` = the payment calendar date in
+`Europe/Prague`, `drumat1='I'`, `drumat2` = category code, `cismat` = item code,
+`nazmat` = item name, `um` = payment month, `mnozst` = quantity, `ucdkl='N'`,
+`str='P'`, `zak='K'`, `procen` = net unit price times quantity, `malvel='V'`,
+`sazdph` = VAT percentage and `jedcen` = net unit price. Other columns retain
+the external table's defaults. The existing SQL schema limits category codes to
+2 characters, item codes to 15 and item names to 30; incompatible values fail
+the payment instead of silently truncating them.
+
+`PaymentExportSnapshots` migrations save code, category code, net price and VAT
+on order units. New units capture these values when ordered. Existing units use
+the catalog codes and VAT available at migration time and reconstruct net price
+from their saved gross price, rounded to two decimals; earlier code/VAT edits
+cannot be recovered. Existing payments are not retrospectively exported.
+
 ## Daily sales (administrator only)
 
 `GET /orders/sales` returns seven calendar days, newest first: today and the

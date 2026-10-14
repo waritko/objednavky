@@ -58,6 +58,10 @@ public abstract class RestaurantDbContext(DbContextOptions options) : DbContext(
         });
         model.Entity<OrderUnit>(e =>
         {
+            e.Property(x => x.ItemCode).HasMaxLength(50);
+            e.Property(x => x.CategoryCode).HasMaxLength(50);
+            e.Property(x => x.UnitPriceBeforeVat).HasPrecision(18, 2);
+            e.Property(x => x.VatRate).HasPrecision(5, 2);
             e.HasOne<MenuItem>().WithMany().HasForeignKey(x => x.MenuItemId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<Account>().WithMany().HasForeignKey(x => x.AddedByAccountId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => x.RequestToken).IsUnique();
