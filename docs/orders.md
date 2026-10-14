@@ -15,7 +15,14 @@ All endpoints require a signed-in account; writes also require `X-CSRF-TOKEN`.
 
 Responses include `id`, `tableId`, `state` (`Active`/`Closed`), `concurrencyToken`, opened/closed timestamps, `total`, `paid`, `unpaid`, outstanding counts and individual `units`. Unit records include snapshot names/prices and account IDs/timestamps for addition, payment, delivery and removal. Totals exclude removed units. Removal preserves payment and creates no refund.
 
-After a successful payment in the staff interface, the browser automatically downloads
+CSV download on payment is disabled by default. Enable it in the API's
+`appsettings.json` with `"CheckoutCsv": { "Enabled": true }` (or the environment
+variable `CheckoutCsv__Enabled=true`) and restart the API. A missing setting also
+defaults to disabled. This setting is independent of the inventory export below.
+`GET /configuration` requires authentication and returns `checkoutCsvEnabled`
+for the staff interface.
+
+When enabled, after a successful payment in the staff interface, the browser downloads
 `platba-{table name}-{YYYY-MM-DD_HH-mm-ss-SSS}.csv`, using local date/time and
 replacing filename-unsafe characters in the table name with underscores.
 This works for both selected-unit and

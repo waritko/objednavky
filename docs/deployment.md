@@ -92,6 +92,7 @@ Supply these environment variables through the service manager or secret store:
 | `AllowedHosts` | Public hostname(s), separated by semicolons |
 | `ReverseProxy__KnownProxies__0` | Additional trusted proxy IP; loopback proxies are trusted by default |
 | `Session__Hours` | Session lifetime with sliding renewal; default 12 |
+| `CheckoutCsv__Enabled` | Browser CSV download after payment; default `false`. Also configurable as `CheckoutCsv:Enabled` in API appsettings; set `true` and restart the API to enable |
 | `DataProtection__KeysPath` | Persistent directory writable only by the service account; survives redeployments |
 | `Bootstrap__Username`, `Bootstrap__Password` | First-administrator credentials; remove immediately after bootstrap |
 

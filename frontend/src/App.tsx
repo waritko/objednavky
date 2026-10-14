@@ -23,6 +23,7 @@ export function App() {
   const [starting, setStarting] = useState(true);
   const [screen, setScreen] = useState<Screen>("tables");
   const [catalog, setCatalog] = useState<Catalog>(emptyCatalog);
+  const [checkoutCsvEnabled, setCheckoutCsvEnabled] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [order, setOrder] = useState<Order | null>(null);
   const [tableId, setTableId] = useState(0);
@@ -43,16 +44,18 @@ export function App() {
   const locked = busy || pending > 0;
 
   const refresh = useCallback(async () => {
-    const [tables, categories, subcategories, items, active] =
+    const [tables, categories, subcategories, items, active, configuration] =
       await Promise.all([
         api<Catalog["tables"]>("/tables"),
         api<Catalog["categories"]>("/catalog/categories"),
         api<Catalog["subcategories"]>("/catalog/subcategories"),
         api<Catalog["items"]>("/catalog/items"),
         api<Order[]>("/orders"),
+        api<{ checkoutCsvEnabled: boolean }>("/configuration"),
       ]);
     setCatalog({ tables, categories, subcategories, items });
     setOrders(active);
+    setCheckoutCsvEnabled(configuration.checkoutCsvEnabled);
   }, []);
   useEffect(() => {
     void csrf()
@@ -184,7 +187,7 @@ export function App() {
           confirmPaidRemoval,
         });
         if (order?.id === target.id) setOrder(updated);
-        if (action === "paid")
+        if (action === "paid" && checkoutCsvEnabled)
           downloadCheckoutCsv(
             target,
             updated,

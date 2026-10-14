@@ -102,6 +102,21 @@ poskytovatelů proti snapshotům. SQL migrační skript byl vygenerován. Schém
 vývojové `dbo.VYDEJ` bylo pouze načteno bez zápisů; provedení exportu a migrace
 na SQL Serveru zůstává neověřené bez `TEST_SQLSERVER_CONNECTION`.
 
+CSV soubor po platbě v prohlížeči je volitelný a standardně vypnutý.
+API `appsettings.json` obsahuje `CheckoutCsv:Enabled=false`; zapnutí vyžaduje
+`true` nebo `CheckoutCsv__Enabled=true` a restart API. Chybějící nastavení
+rovněž znamená vypnuto. Přihlášený frontend načítá pouze příznak
+`checkoutCsvEnabled` přes `GET /configuration` při obnově dat. Nastavení je
+nezávislé na `PaymentExport:Enabled` pro export do `dbo.VYDEJ`.
+Mobilní E2E testy ověřují obě varianty: `npm --prefix frontend run test:e2e`
+bez `CheckoutCsv__Enabled` pro výchozí vypnutí, se `CheckoutCsv__Enabled=true`
+pro částečné i úplné CSV platby.
+Ověření volitelného CSV exportu: backend bez chyb a varování, produkční
+sestavení frontendu, šest frontendových testů, kompletní integrační sada SQLite
+a oba mobilní E2E scénáře s vypnutým i zapnutým exportem prošly. Formátování
+změněných C#/TypeScript souborů prošlo. SQL Server nebyl pro tuto změnu testován;
+konfigurace CSV neprovádí databázové změny.
+
 ## Pravidla
 
 - Po každém vyřešeném požadavku vytvoř git commit s relevantními změnami.

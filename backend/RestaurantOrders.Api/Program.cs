@@ -135,6 +135,10 @@ app.MapGet("/health/database", async (RestaurantDbContext db, CancellationToken 
         ? Results.Ok(new { status = "ok" })
         : Results.Problem("Database unavailable", statusCode: StatusCodes.Status503ServiceUnavailable));
 app.MapAuthEndpoints();
+app.MapGet("/configuration", (IConfiguration configuration) => Results.Ok(new
+{
+    checkoutCsvEnabled = configuration.GetValue("CheckoutCsv:Enabled", false)
+})).RequireAuthorization();
 app.MapCatalogEndpoints();
 app.MapOrderEndpoints();
 app.Run();

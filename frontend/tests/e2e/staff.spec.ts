@@ -5,9 +5,11 @@ test("administrator configures restaurant, then staff completes phone service fl
   page,
 }, info) => {
   const suffix = info.project.name;
+  const csvEnabled = process.env.CheckoutCsv__Enabled === "true";
   page.on("dialog", (dialog) => dialog.accept());
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  expect((await page.request.get("/configuration")).status()).toBe(401);
   await page.goto("/");
   await page.getByLabel("Uživatelské jméno", { exact: true }).fill("admin");
   await page
@@ -18,6 +20,9 @@ test("administrator configures restaurant, then staff completes phone service fl
     page.getByRole("heading", { name: "Správa restaurace" }),
   ).toBeVisible();
   await expect(page.locator("header")).toBeVisible();
+  expect(await (await page.request.get("/configuration")).json()).toEqual({
+    checkoutCsvEnabled: csvEnabled,
+  });
   await expect(page.getByRole("navigation")).toBeVisible();
   await page.getByLabel("Název", { exact: true }).fill(`Stůl ${suffix}`);
   await page.getByRole("button", { name: "Uložit", exact: true }).click();
@@ -221,22 +226,29 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(page.getByRole("alert")).toContainText("Platba selhala.");
   expect(downloads).toEqual([]);
   await page.unroute("**/orders/*/paid");
-  const partialDownloadPromise = page.waitForEvent("download");
+  const partialDownloadPromise = csvEnabled
+    ? page.waitForEvent("download")
+    : null;
   await order
     .getByRole("button", { name: "Zaplatit vybrané", exact: true })
     .tap();
-  const partialDownload = await partialDownloadPromise;
-  expect(partialDownload.suggestedFilename()).toMatch(
-    new RegExp(
-      `^platba-Stůl ${suffix}-\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}-\\d{3}\\.csv$`,
-    ),
-  );
-  const partialCsv = await readFile((await partialDownload.path())!, "utf8");
-  expect(partialCsv).toMatch(
-    new RegExp(
-      `^\\uFEFFproduct_code,product_name,quantity\\r\\n"${suffix}","Káva ${suffix}",1\\r\\n$`,
-    ),
-  );
+  let partialCsv = "";
+  let partialFilename = "";
+  if (partialDownloadPromise) {
+    const partialDownload = await partialDownloadPromise;
+    partialFilename = partialDownload.suggestedFilename();
+    expect(partialFilename).toMatch(
+      new RegExp(
+        `^platba-Stůl ${suffix}-\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}-\\d{3}\\.csv$`,
+      ),
+    );
+    partialCsv = await readFile((await partialDownload.path())!, "utf8");
+    expect(partialCsv).toMatch(
+      new RegExp(
+        `^\\uFEFFproduct_code,product_name,quantity\\r\\n"${suffix}","Káva ${suffix}",1\\r\\n$`,
+      ),
+    );
+  }
   await expect(
     order.getByText("2 nevydaných · 2 nezaplacených", { exact: true }),
   ).toBeVisible();
@@ -244,6 +256,7 @@ test("administrator configures restaurant, then staff completes phone service fl
     path: `../artifacts/${suffix}-partial-payment.png`,
     fullPage: true,
   });
+  expect(downloads).toHaveLength(csvEnabled ? 1 : 0);
   const width = await page.evaluate(() => ({
     content: document.documentElement.scrollWidth,
     viewport: window.innerWidth,
@@ -293,18 +306,18 @@ test("administrator configures restaurant, then staff completes phone service fl
   await expect(
     order.getByText("0 nevydaných · 2 nezaplacených", { exact: true }),
   ).toBeVisible();
-  const fullDownloadPromise = page.waitForEvent("download");
+  const fullDownloadPromise = csvEnabled ? page.waitForEvent("download") : null;
   await order.getByRole("button", { name: "Zaplatit vše", exact: true }).tap();
-  const fullDownload = await fullDownloadPromise;
-  const fullCsv = await readFile((await fullDownload.path())!, "utf8");
-  expect(fullCsv).toBe(partialCsv.replace(/,1\r\n$/, ",2\r\n"));
-  expect(fullDownload.suggestedFilename()).not.toBe(
-    partialDownload.suggestedFilename(),
-  );
-  expect(downloads).toHaveLength(2);
+  if (fullDownloadPromise) {
+    const fullDownload = await fullDownloadPromise;
+    const fullCsv = await readFile((await fullDownload.path())!, "utf8");
+    expect(fullCsv).toBe(partialCsv.replace(/,1\r\n$/, ",2\r\n"));
+    expect(fullDownload.suggestedFilename()).not.toBe(partialFilename);
+  }
   await expect(
     order.getByRole("heading", { name: "Uzavřená objednávka" }),
   ).toBeVisible();
+  expect(downloads).toHaveLength(csvEnabled ? 2 : 0);
   await page
     .getByRole("navigation")
     .getByRole("button", { name: "Kuchyně", exact: true })
@@ -408,4 +421,5 @@ test("administrator configures restaurant, then staff completes phone service fl
     .click();
   await expect(soldRow).toContainText("4 ks");
   expect(errors).toEqual([]);
+  expect(downloads).toHaveLength(csvEnabled ? 3 : 0);
 });
