@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>RestaurantOrders.Api-local-development</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

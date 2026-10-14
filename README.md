@@ -15,9 +15,13 @@ $sqlPassword.Dispose()
 .\scripts\start-local.ps1
 ```
 
-The primary database is SQL Server at `mrazitko.varak.net`, database
-`RestaurantOrders`, login `monami`. Supply its password through `Database__Password`
-or override the full `ConnectionStrings__RestaurantOrders` connection string.
+Development uses SQL Server at `mrazitko.varak.net`, database `klient_monami`,
+login `monami`. The production default database remains `RestaurantOrders`.
+The password can also be stored outside the repository in .NET user secrets
+under `Database:Password` for `backend/RestaurantOrders.Api`; this workstation
+is already configured, so the password prompt above can be skipped here.
+`Database__Password` overrides user secrets. Override the full
+`ConnectionStrings__RestaurantOrders` connection string to select another database.
 For local SQLite, set `Database__Provider=Sqlite` and
 `ConnectionStrings__RestaurantOrders=Data Source=restaurant-orders.db` instead.
 

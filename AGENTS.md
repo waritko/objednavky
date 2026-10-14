@@ -29,8 +29,22 @@ Výchozí databází je MS SQL Server na `mrazitko.varak.net`, databáze
 `RestaurantOrders`, SQL uživatel `monami`. Připojení používá šifrování a ověřování
 certifikátu. Heslo dodává `Database__Password` nebo úplný řetězec v
 `ConnectionStrings__RestaurantOrders`; hesla neukládej do repozitáře.
-`Database__Password` má přednost před heslem v řetězci. SQLite je volitelná
-alternativa přes `Database__Provider=Sqlite` a odpovídající připojovací řetězec.
+`Database__Password` má přednost před heslem v řetězci.
+Vývojové prostředí (`Development`, včetně `scripts/start-local.ps1`) používá
+na stejném serveru databázi `klient_monami` a uživatele `monami`.
+Vývojové heslo je na tomto počítači uloženo mimo repozitář v .NET user secrets
+API (`UserSecretsId=RestaurantOrders.Api-local-development`, klíč
+`Database:Password`); proměnné prostředí mají přednost. Produkční výchozí
+databáze zůstává `RestaurantOrders`. Integrační testy nadále používají izolované
+databáze, nikoli `klient_monami`.
+Ověření této vývojové konfigurace: backend se sestavil bez chyb a varování;
+kontrola konfigurace a načtení lokálního hesla prošly. Pokus o připojení bez
+migrací selhal na nedůvěryhodné certifikační autoritě TLS serveru na tomto
+počítači. Ověřování certifikátu zůstává zapnuté; pro připojení je nutné vyřešit
+důvěru certifikačního řetězce. Migrace ani integrační testy na `klient_monami`
+nebyly spuštěny.
+SQLite je volitelná alternativa přes `Database__Provider=Sqlite` a odpovídající
+připojovací řetězec.
 Start API automaticky aplikuje migrace; chybějící heslo SQL autentizace skončí
 chybou konfigurace ještě před migracemi. Testy používají izolované databáze,
 nikdy neprováděj integrační testy proti provozní databázi.
