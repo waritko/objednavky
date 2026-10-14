@@ -17,6 +17,8 @@ $sqlPassword.Dispose()
 
 Development uses SQL Server at `mrazitko.varak.net`, database `klient_monami`,
 login `monami`. The production default database remains `RestaurantOrders`.
+Development encrypts the connection and trusts the server certificate
+(`TrustServerCertificate=True`); production retains certificate validation.
 The password can also be stored outside the repository in .NET user secrets
 under `Database:Password` for `backend/RestaurantOrders.Api`; this workstation
 is already configured, so the password prompt above can be skipped here.

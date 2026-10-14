@@ -40,9 +40,12 @@ databáze, nikoli `klient_monami`.
 Ověření této vývojové konfigurace: backend se sestavil bez chyb a varování;
 kontrola konfigurace a načtení lokálního hesla prošly. Pokus o připojení bez
 migrací selhal na nedůvěryhodné certifikační autoritě TLS serveru na tomto
-počítači. Ověřování certifikátu zůstává zapnuté; pro připojení je nutné vyřešit
-důvěru certifikačního řetězce. Migrace ani integrační testy na `klient_monami`
+počítači. Na výslovný pokyn uživatele vývojová konfigurace nyní používá
+`Encrypt=True;TrustServerCertificate=True`; produkční výchozí konfigurace
+nadále ověřuje certifikát. Migrace ani integrační testy na `klient_monami`
 nebyly spuštěny.
+Po zapnutí důvěry certifikátu prošlo připojení pomocí lokálního hesla a kontrola
+`SELECT DB_NAME()` vrátila `klient_monami`; ověření neprovádělo zápisy ani migrace.
 SQLite je volitelná alternativa přes `Database__Provider=Sqlite` a odpovídající
 připojovací řetězec.
 Start API automaticky aplikuje migrace; chybějící heslo SQL autentizace skončí

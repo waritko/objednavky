@@ -129,6 +129,8 @@ password produces a configuration error before migrations. Override
 The `Development` environment instead selects database `klient_monami` on the
 same server with login `monami`. Local development credentials use .NET user
 secrets (`Database:Password`); environment variables still take precedence.
+Development uses `Encrypt=True;TrustServerCertificate=True` to trust this
+server's certificate. The production default retains certificate validation.
 
 SQL Server **2022** is the tested version. Create a dedicated database and application login, set `Database__Provider=SqlServer`, and configure a connection string with TLS validation, for example `Server=sql.example;Database=RestaurantOrders;User Id=restaurant;Password=<from secret store>;Encrypt=True;TrustServerCertificate=False`. Windows integrated authentication is also supported where configured.
 
