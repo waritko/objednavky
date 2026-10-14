@@ -45,11 +45,11 @@ and serializable range locks. `cisobj` is the order ID, also for partial payment
 Rows group quantities by saved item code, category code, name, net unit price and
 VAT rate; historical price or tax differences remain separate rows.
 
-The mapping is `sklad=1`, `cisrad=0`, `datvyd` = the payment calendar date in
+The mapping is `sklad=1`, `cisrad=0`, `datvyd` = the payment date and time in
 `Europe/Prague`, `drumat1='I'`, `drumat2` = category code, `cismat` = item code,
 `nazmat` = item name, `um` = payment month, `mnozst` = quantity, `ucdkl='N'`,
 `str='P'`, `zak='K'`, `procen` = net unit price times quantity, `malvel='V'`,
-`sazdph` = VAT percentage and `jedcen` = net unit price. Other columns retain
+`sazdph` = VAT percentage, `jedcen` = net unit price and `znamen='Kč'`. Other columns retain
 the external table's defaults. The existing SQL schema limits category codes to
 2 characters, item codes to 15 and item names to 30; incompatible values fail
 the payment instead of silently truncating them.

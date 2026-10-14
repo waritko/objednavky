@@ -86,6 +86,9 @@ a transakci jako stav objednávky a audit. Aplikace tuto tabulku nevytváří an
 nemění; `PaymentExport__Enabled=false` integraci vypne, SQLite ji standardně
 nepoužívá. `cisobj` je ID objednávky. Jedna platební akce sdílí `cisvyd`,
 číslování používá maximum pro `sklad=1 AND cisrad=0` a zámky `UPDLOCK, HOLDLOCK`.
+Export nastavuje `znamen` na `Kč` a `datvyd` na datum a čas platby v Europe/Prague.
+Ověření těchto polí při částečné i úplné platbě a kompletní integrační sada SQLite
+prošly; SQL Server zůstává neověřen bez izolovaného `TEST_SQLSERVER_CONNECTION`.
 Export zahrnuje jen nově zaplacené neodebrané kusy, selhání vrací celou platbu.
 Migrace `PaymentExportSnapshots` obou poskytovatelů přidává k jednotkám snapshot
 kódů, ceny bez DPH a sazby DPH. Starší jednotky přebírají kódy a sazbu z katalogu

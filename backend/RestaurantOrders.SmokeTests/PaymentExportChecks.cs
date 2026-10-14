@@ -24,12 +24,12 @@ internal static class PaymentExportChecks
                 nazmat varchar(30) NOT NULL, um int NOT NULL, mnozst numeric(12,3) NOT NULL,
                 ucdkl char(1) NOT NULL, str varchar(6) NOT NULL, zak varchar(10) NOT NULL,
                 procen numeric(14,2) NOT NULL, malvel char(1) NOT NULL,
-                sazdph numeric(3,1) NOT NULL, jedcen numeric(12,3) NOT NULL)
+                sazdph numeric(3,1) NOT NULL, jedcen numeric(12,3) NOT NULL, znamen nvarchar(2) NOT NULL)
             """);
         await setup.Database.ExecuteSqlRawAsync("""
-            INSERT INTO VYDEJ VALUES (1,0,40,'2026-01-01',0,'I','01','seed','seed',1,1,'N','P','K',1,'V',12,1);
-            INSERT INTO VYDEJ VALUES (1,1,900,'2026-01-01',0,'I','01','seed','seed',1,1,'N','P','K',1,'V',12,1);
-            INSERT INTO VYDEJ VALUES (2,0,800,'2026-01-01',0,'I','01','seed','seed',1,1,'N','P','K',1,'V',12,1)
+            INSERT INTO VYDEJ VALUES (1,0,40,'2026-01-01',0,'I','01','seed','seed',1,1,'N','P','K',1,'V',12,1,'');
+            INSERT INTO VYDEJ VALUES (1,1,900,'2026-01-01',0,'I','01','seed','seed',1,1,'N','P','K',1,'V',12,1,'');
+            INSERT INTO VYDEJ VALUES (2,0,800,'2026-01-01',0,'I','01','seed','seed',1,1,'N','P','K',1,'V',12,1,'')
             """);
         var actor = new Account { Username = "export", PasswordHash = "unused" };
         var table = new RestaurantTable { Name = "Export" };
@@ -69,7 +69,7 @@ internal static class PaymentExportChecks
         async Task<List<ExportRow>> Rows()
         {
             await using var db = database.Context();
-            return await db.Database.SqlQueryRaw<ExportRow>("SELECT CAST(sklad AS int) AS sklad, CAST(cisrad AS int) AS cisrad, cisvyd, datvyd, cisobj, drumat1, drumat2, cismat, nazmat, um, mnozst, ucdkl, str, zak, procen, malvel, sazdph, jedcen FROM VYDEJ WHERE cisobj > 0 ORDER BY cisvyd, cismat, jedcen").ToListAsync();
+            return await db.Database.SqlQueryRaw<ExportRow>("SELECT CAST(sklad AS int) AS sklad, CAST(cisrad AS int) AS cisrad, cisvyd, datvyd, cisobj, drumat1, drumat2, cismat, nazmat, um, mnozst, ucdkl, str, zak, procen, malvel, sazdph, jedcen, znamen FROM VYDEJ WHERE cisobj > 0 ORDER BY cisvyd, cismat, jedcen").ToListAsync();
         }
 
         await Add(item.Id);
@@ -89,11 +89,13 @@ internal static class PaymentExportChecks
         Assert(await Change(order, "paid", first) == 200, "partial payment exported");
         var rows = await Rows();
         var row = rows.Single();
-        var date = TimeZoneInfo.ConvertTime(order.Units.First().AddedAt, TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague")).Date;
+        var paidOrder = await Order();
+        var paymentTime = TimeZoneInfo.ConvertTime(paidOrder.Units.First(x => first.Contains(x.Id)).PaidAt!.Value,
+            TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague")).DateTime;
         Assert(row.cisvyd == 41 && row.cisobj == order.Id && row.sklad == 1 && row.cisrad == 0 &&
-            row.datvyd.Date == date && row.um == date.Month && row.drumat1.Trim() == "I" && row.drumat2.Trim() == "01" &&
+            Math.Abs((row.datvyd - paymentTime).TotalMilliseconds) < 4 && row.um == paymentTime.Month && row.drumat1.Trim() == "I" && row.drumat2.Trim() == "01" &&
             row.cismat.Trim() == "000012" && row.nazmat == "Original" && row.mnozst == 2 && row.procen == 200.5m &&
-            row.jedcen == 100.25m && row.sazdph == 12 && row.ucdkl == "N" && row.str == "P" && row.zak == "K" && row.malvel == "V",
+            row.jedcen == 100.25m && row.sazdph == 12 && row.ucdkl == "N" && row.str == "P" && row.zak == "K" && row.malvel == "V" && row.znamen == "Kč",
             "VYDEJ mapping, grouped count, historical snapshots, net amounts and filtered numbering");
         Assert(await Change(order, "paid", first) == 409 && (await Rows()).Count == 1, "stale payment does not duplicate export");
         order = await Order();
@@ -102,6 +104,13 @@ internal static class PaymentExportChecks
         rows = await Rows();
         Assert(rows.Count == 3 && rows.Count(x => x.cisvyd == 42) == 2 && rows.Where(x => x.cisvyd == 42).Sum(x => x.mnozst) == 2,
             "one shared document number per payment, only newly paid quantities");
+        paidOrder = await Order();
+        paymentTime = TimeZoneInfo.ConvertTime(paidOrder.Units.First(x => !first.Contains(x.Id)).PaidAt!.Value,
+            TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague")).DateTime;
+        // SQL Server datetime rounds to approximately 3.33 ms; SQLite preserves the timestamp.
+        Assert(rows.All(x => x.znamen == "Kč") && rows.Where(x => x.cisvyd == 42)
+            .All(x => Math.Abs((x.datvyd - paymentTime).TotalMilliseconds) < 4),
+            "whole-order payment exports Kč and the payment date and time");
         await Add(item.Id);
         order = await Order();
         var remove = order.Units.Single(x => x.PaidAt is null).Id;
@@ -167,5 +176,6 @@ internal static class PaymentExportChecks
         public string malvel { get; set; } = "";
         public decimal sazdph { get; set; }
         public decimal jedcen { get; set; }
+        public string znamen { get; set; } = "";
     }
 }
