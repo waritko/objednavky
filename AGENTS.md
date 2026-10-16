@@ -84,8 +84,12 @@ databází v testech krátce opakuje pokus při dočasném zámku souboru ve Win
 Platby na SQL Serveru zapisují do existující `dbo.VYDEJ` ve stejné databázi
 a transakci jako stav objednávky a audit. Aplikace tuto tabulku nevytváří ani
 nemění; `PaymentExport__Enabled=false` integraci vypne, SQLite ji standardně
-nepoužívá. `cisobj` je ID objednávky. Jedna platební akce sdílí `cisvyd`,
+nepoužívá. `cisobj=0`, ID objednávky se zapisuje do `dovzaz`, včetně částečných
+plateb. Jedna platební akce sdílí `cisvyd`,
 číslování používá maximum pro `sklad=1 AND cisrad=0` a zámky `UPDLOCK, HOLDLOCK`.
+Ověření přesunu ID do `dovzaz`: kompletní integrační sada SQLite včetně kontroly
+`cisobj=0` a `dovzaz` při částečné i úplné platbě a formátování změněných C#
+souborů prošly. SQL Server nebyl ověřen bez `TEST_SQLSERVER_CONNECTION`.
 Export nastavuje `znamen` na `Kč` a `datvyd` na datum a čas platby v Europe/Prague.
 Ověření těchto polí při částečné i úplné platbě a kompletní integrační sada SQLite
 prošly; SQL Server zůstává neověřen bez izolovaného `TEST_SQLSERVER_CONNECTION`.

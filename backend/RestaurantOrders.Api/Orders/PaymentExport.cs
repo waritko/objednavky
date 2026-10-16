@@ -31,18 +31,18 @@ public sealed class PaymentExport(RestaurantDbContext db, IConfiguration configu
             if (db.Database.IsSqlServer())
                 await db.Database.ExecuteSqlInterpolatedAsync($"""
                     INSERT INTO dbo.VYDEJ
-                        (sklad, cisrad, cisvyd, datvyd, cisobj, drumat1, drumat2, cismat, nazmat,
+                        (sklad, cisrad, cisvyd, datvyd, cisobj, dovzaz, drumat1, drumat2, cismat, nazmat,
                          um, mnozst, ucdkl, str, zak, procen, malvel, sazdph, jedcen, znamen)
-                    VALUES (1, 0, {number}, {date}, {orderId}, 'I', {line.Key.CategoryCode},
+                    VALUES (1, 0, {number}, {date}, 0, {orderId}, 'I', {line.Key.CategoryCode},
                         {line.Key.ItemCode}, {line.Key.ItemName}, {date.Month}, {count}, 'N', 'P', 'K',
                         {total}, 'V', {line.Key.VatRate}, {line.Key.UnitPriceBeforeVat}, {"Kč"})
                     """, ct);
             else
                 await db.Database.ExecuteSqlInterpolatedAsync($"""
                     INSERT INTO VYDEJ
-                        (sklad, cisrad, cisvyd, datvyd, cisobj, drumat1, drumat2, cismat, nazmat,
+                        (sklad, cisrad, cisvyd, datvyd, cisobj, dovzaz, drumat1, drumat2, cismat, nazmat,
                          um, mnozst, ucdkl, str, zak, procen, malvel, sazdph, jedcen, znamen)
-                    VALUES (1, 0, {number}, {date}, {orderId}, 'I', {line.Key.CategoryCode},
+                    VALUES (1, 0, {number}, {date}, 0, {orderId}, 'I', {line.Key.CategoryCode},
                         {line.Key.ItemCode}, {line.Key.ItemName}, {date.Month}, {count}, 'N', 'P', 'K',
                         {total}, 'V', {line.Key.VatRate}, {line.Key.UnitPriceBeforeVat}, {"Kč"})
                     """, ct);

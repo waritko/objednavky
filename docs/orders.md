@@ -48,7 +48,7 @@ newly paid, non-removed units; removals do not refund or reverse inventory rows.
 
 Each payment action shares one `cisvyd`, allocated as
 `COALESCE(MAX(cisvyd), 0) + 1 WHERE sklad=1 AND cisrad=0`, using SQL Server update
-and serializable range locks. `cisobj` is the order ID, also for partial payments.
+and serializable range locks. `cisobj=0`; `dovzaz` holds the order ID, also for partial payments.
 Rows group quantities by saved item code, category code, name, net unit price and
 VAT rate; historical price or tax differences remain separate rows.
 
