@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { groupUnits, money, time } from "./orderHelpers";
-import type { Audit, Order, Unit } from "./types";
+import type { Audit, Order, Table, Unit } from "./types";
 import { NoteEditor } from "./NoteEditor";
 
 export function OrderPanel({
@@ -9,9 +9,13 @@ export function OrderPanel({
   busy,
   change,
   saveNote,
+  availableTables,
+  move,
 }: {
   order: Order;
   busy: boolean;
+  availableTables: Table[];
+  move: (tableId: number) => Promise<void>;
   saveNote: (note: string, menuItemId?: number) => Promise<boolean>;
   change: (
     action: string,
@@ -20,6 +24,7 @@ export function OrderPanel({
   ) => Promise<void>;
 }) {
   const [selected, setSelected] = useState<number[]>([]);
+  const [destination, setDestination] = useState(0);
   const [audit, setAudit] = useState<Audit[] | null>(null);
   const [auditError, setAuditError] = useState("");
   useEffect(() => {
@@ -106,6 +111,41 @@ export function OrderPanel({
         busy={busy}
         save={(note) => saveNote(note)}
       />
+      {!closed && (
+        <div className="actions">
+          <label>
+            Přesunout na stůl
+            <select
+              value={
+                availableTables.some((table) => table.id === destination)
+                  ? destination
+                  : 0
+              }
+              disabled={busy || !availableTables.length}
+              onChange={(event) => setDestination(Number(event.target.value))}
+            >
+              <option value={0}>
+                {availableTables.length
+                  ? "Vyberte volný stůl"
+                  : "Žádný volný stůl"}
+              </option>
+              {availableTables.map((table) => (
+                <option key={table.id} value={table.id}>
+                  {table.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            disabled={
+              busy || !availableTables.some((table) => table.id === destination)
+            }
+            onClick={() => void move(destination)}
+          >
+            Přesunout objednávku
+          </button>
+        </div>
+      )}
       <div className="unit-list">
         {groupUnits(order.units).map((group) => {
           const unit = group[0];
@@ -294,6 +334,7 @@ export function OrderPanel({
                   removed: "Odebráno",
                   Closed: "Uzavřeno",
                   NoteChanged: "Poznámka změněna",
+                  Moved: "Přesunuto na jiný stůl",
                 } as Record<string, string>
               )[entry.action] || entry.action}{" "}
               · {entry.username} · {time(entry.occurredAt)}

@@ -10,6 +10,7 @@ namespace RestaurantOrders.Api.Orders;
 
 public sealed record AddUnitInput(int MenuItemId, Guid RequestToken);
 public sealed record ChangeNoteInput(Guid ConcurrencyToken, string? Note, int? MenuItemId = null);
+public sealed record MoveOrderInput(Guid ConcurrencyToken, int TableId);
 public sealed record ChangeUnitsInput(Guid ConcurrencyToken, int[]? UnitIds, bool All = false, bool ConfirmPaidRemoval = false);
 
 public sealed class OrderService(RestaurantDbContext db, PaymentExport paymentExport)
@@ -150,6 +151,25 @@ public sealed class OrderService(RestaurantDbContext db, PaymentExport paymentEx
                 Audit(order, null, actor, now, "Closed", new { });
             }
         }
+        return Results.Ok(View(order));
+    }, ct);
+
+    public Task<IResult> Move(int id, MoveOrderInput input, int actor, CancellationToken ct) => Write(async () =>
+    {
+        var order = await db.Orders.Include(x => x.Units).SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (order is null) return Results.NotFound();
+        if (order.State == OrderState.Closed) return Error("order_closed", "Uzavřenou objednávku nelze změnit.", 409);
+        if (order.ConcurrencyToken != input.ConcurrencyToken) return Conflict();
+        if (order.TableId == input.TableId) return Results.Ok(View(order));
+        if (!await db.Tables.AnyAsync(x => x.Id == input.TableId && x.Enabled, ct))
+            return Error("table_unavailable", "Stůl není dostupný.");
+        if (await db.Orders.AnyAsync(x => x.ActiveTableId == input.TableId, ct))
+            return Error("table_occupied", "Cílový stůl již má aktivní objednávku.", 409);
+        var before = order.TableId;
+        order.TableId = input.TableId;
+        order.ActiveTableId = input.TableId;
+        order.ConcurrencyToken = Guid.NewGuid();
+        Audit(order, null, actor, DateTimeOffset.UtcNow, "Moved", new { before, after = input.TableId });
         return Results.Ok(View(order));
     }, ct);
 

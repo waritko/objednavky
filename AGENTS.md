@@ -121,6 +121,20 @@ a oba mobilní E2E scénáře s vypnutým i zapnutým exportem prošly. Formáto
 změněných C#/TypeScript souborů prošlo. SQL Server nebyl pro tuto změnu testován;
 konfigurace CSV neprovádí databázové změny.
 
+Přesun aktivní objednávky: `POST /orders/{id}/move` přijímá
+`{concurrencyToken, tableId}` a dovolí pouze povolený stůl bez aktivní objednávky.
+Zachovává ID, položky, platby a poznámky, uvolní původní stůl a zapíše audit
+`Moved` s původním a cílovým ID stolu. Používá existující serializovatelnou
+transakci, unikátní index aktivního stolu a nový concurrency token; nevyžaduje
+migraci. Uzavřenou objednávku nelze přesunout. Detail nabízí volné stoly a po
+přesunu sleduje nový stůl i při dalších přidáních; přesun blokuje čekající kliky.
+Historie používá poslední stůl, předchozí umístění uchovává audit.
+`MoveOrderChecks` v integrační sadě ověřuje zachování dat, validace, oprávnění,
+audit a souběžný přesun na jeden cíl; mobilní E2E ověřuje přesun tam i zpět.
+Ověření přesunu: kompletní integrační sada SQLite, šest frontendových testů,
+produkční sestavení frontendu, kontrola TypeScriptu a oba mobilní E2E scénáře
+prošly. SQL Server pro tuto změnu nebyl testován; schéma databáze se nemění.
+
 ## Pravidla
 
 - Po každém vyřešeném požadavku vytvoř git commit s relevantními změnami.

@@ -98,6 +98,7 @@ try
     await CatalogChecks.Run(admin, staff, anonymous);
     await ImportChecks.Run(admin, staff, anonymous, Path.Combine(root, "../ciselnik.csv"));
     await OrderChecks.Run(admin, staff, anonymous);
+    await MoveOrderChecks.Run(admin, staff, anonymous);
     await HistoryChecks.Run(staff, database);
     await SalesChecks.Run(admin, staff, anonymous, database);
     await ConcurrencyChecks.Run(admin, staff);

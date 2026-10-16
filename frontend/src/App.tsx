@@ -42,6 +42,9 @@ export function App() {
   });
   const [page, setPage] = useState(1);
   const locked = busy || pending > 0;
+  useEffect(() => {
+    if (order) setTableId(order.tableId);
+  }, [order?.tableId]);
 
   const refresh = useCallback(async () => {
     const [tables, categories, subcategories, items, active, configuration] =
@@ -199,6 +202,26 @@ export function App() {
         if (error instanceof ApiError && error.status === 409) {
           const latest = await api<Order>(`/orders/${target.id}`);
           if (order?.id === target.id) setOrder(latest);
+          await refresh();
+        }
+        throw error;
+      }
+      await refresh();
+    });
+  }
+  async function moveOrder(destination: number) {
+    if (!order || locked) return;
+    await run(async () => {
+      try {
+        setOrder(
+          await api<Order>(`/orders/${order.id}/move`, {
+            concurrencyToken: order.concurrencyToken,
+            tableId: destination,
+          }),
+        );
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 409) {
+          setOrder(await api<Order>(`/orders/${order.id}`));
           await refresh();
         }
         throw error;
@@ -535,6 +558,13 @@ export function App() {
                     busy={locked}
                     change={change}
                     saveNote={saveNote}
+                    availableTables={catalog.tables.filter(
+                      (table) =>
+                        table.enabled &&
+                        table.id !== order.tableId &&
+                        !orders.some((active) => active.tableId === table.id),
+                    )}
+                    move={moveOrder}
                   />
                 ) : (
                   <section className="order-panel">

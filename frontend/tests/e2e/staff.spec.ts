@@ -27,6 +27,9 @@ test("administrator configures restaurant, then staff completes phone service fl
   await page.getByLabel("Název", { exact: true }).fill(`Stůl ${suffix}`);
   await page.getByRole("button", { name: "Uložit", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("Záznam byl uložen");
+  await page.getByLabel("Název", { exact: true }).fill(`Přesun ${suffix}`);
+  await page.getByRole("button", { name: "Uložit", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("Záznam byl uložen");
   await page.getByRole("button", { name: "Import CSV", exact: true }).click();
   await page.getByLabel("Soubor CSV").setInputFiles({
     name: "menu.csv",
@@ -168,6 +171,41 @@ test("administrator configures restaurant, then staff completes phone service fl
   await line.getByRole("button", { name: "Uložit", exact: true }).tap();
   await expect(line.locator("textarea")).toHaveCount(0);
   await expect(line.getByText("Bez cukru", { exact: true })).toBeVisible();
+  // Move the same order, reopen it at its destination, then return it for service.
+  const beforeMove = (await (await page.request.get("/orders")).json()).find(
+    (entry: { note: string }) => entry.note === "Narozeniny u stolu",
+  );
+  await order
+    .getByLabel("Přesunout na stůl")
+    .selectOption({ label: `Přesun ${suffix}` });
+  await order
+    .getByRole("button", { name: "Přesunout objednávku", exact: true })
+    .tap();
+  await expect(
+    page.getByRole("heading", { name: `Přesun ${suffix}`, exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Obnovit stůl", exact: true }).tap();
+  await disclosure.tap();
+  await expect(
+    order.getByText("Narozeniny u stolu", { exact: true }),
+  ).toBeVisible();
+  const afterMove = await (
+    await page.request.get(`/orders/${beforeMove.id}`)
+  ).json();
+  expect(afterMove.units).toEqual(beforeMove.units);
+  expect(afterMove.tableId).not.toBe(beforeMove.tableId);
+  await order
+    .getByLabel("Přesunout na stůl")
+    .selectOption({ label: `Stůl ${suffix}` });
+  await order
+    .getByRole("button", { name: "Přesunout objednávku", exact: true })
+    .tap();
+  await expect(
+    page.getByRole("heading", { name: `Stůl ${suffix}`, exact: true }),
+  ).toBeVisible();
+  await disclosure.tap();
+  await order.getByRole("button", { name: "Zobrazit historii změn" }).tap();
+  await expect(order.locator(".audit")).toContainText("Přesunuto na jiný stůl");
   await page.locator(".mobile-menu summary").tap();
   await expect(
     page.getByRole("button", { name: "Odhlásit", exact: true }),
